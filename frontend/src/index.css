@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Design tokens ──────────────────────────────────────────── */
+:root {
+  --background:         #0F0F0F;
+  --foreground:         #F0EBE0;        /* warm white, más legible que puro blanco */
+  --card:               #1C1C1C;
+  --card-foreground:    #F0EBE0;
+  --muted:              #252525;
+  --muted-foreground:   #A8A8A8;        /* antes #888 — ahora contraste 5.5:1 */
+  --border:             #383838;        /* más visible que #2A2A2A */
+  --primary:            #E8590C;
+  --primary-foreground: #FFFFFF;
+  --secondary:          #2A2A2A;
+  --sidebar-bg:         #141414;
+  --header-bg:          #141414;
+
+  /*
+   * Paleta inclusiva para deuteranopia/protanopia (ceguera rojo-verde):
+   * ✅  ÉXITO  → azul-verde #22D3EE  (cyan) — nunca confundible con error
+   * ⚠️  ALERTA → amarillo  #FBBF24  — visible para todos los tipos
+   * ❌  ERROR  → magenta   #F472B6  — rojo rosado, NO depende del canal verde
+   * ℹ️  INFO   → azul      #60A5FA
+   *
+   * El naranja primario (#E8590C) sigue siendo el acento de marca.
+   */
+  --color-success:      #22D3EE;   /* cyan — distinguible del error en todos los tipos */
+  --color-success-bg:   #042A30;
+  --color-warning:      #FBBF24;   /* amarillo ámbar */
+  --color-warning-bg:   #2C1F04;
+  --color-error:        #F472B6;   /* magenta/rosa — no confundible con verde */
+  --color-error-bg:     #2A0A1A;
+  --color-info:         #60A5FA;   /* azul */
+  --color-info-bg:      #0A1628;
+
+  --radius-s:    4px;
+  --radius-m:    8px;
+  --radius-l:    12px;
+  --radius-pill: 9999px;
+}
+
+/* ─── Base reset ────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;          /* base legible — sube todo proporcionalmente */
+  scroll-behavior: smooth;
+}
+
+body, #root {
+  min-height: 100vh;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 1rem;          /* 16px */
+  line-height: 1.6;         /* espaciado entre líneas generoso */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Accesibilidad: foco visible ────────────────────────────── */
+:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: var(--radius-s);
+}
+
+/* ─── Tamaño mínimo de área táctil ──────────────────────────── */
+button, a, [role="button"], [role="link"] {
+  min-height: 38px;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #1C1C1C; }
+::-webkit-scrollbar-thumb { background: #383838; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #484848; }
+
+/* ─── Utilidades extra ───────────────────────────────────────── */
+@layer utilities {
+  .text-muted        { color: var(--muted-foreground); }
+  .bg-card           { background-color: var(--card); }
+  .border-border     { border-color: var(--border); }
+}

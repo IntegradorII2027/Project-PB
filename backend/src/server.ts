@@ -1,0 +1,33 @@
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import dotenv from 'dotenv';
+import { router } from './routes/index';
+import { errorHandler } from './middleware/error.middleware';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',');
+app.use(cors({
+  origin: (origin, cb) => cb(null, !origin || allowedOrigins.includes(origin)),
+  credentials: true,
+}));
+app.use(express.json({ limit: '1mb' }));
+app.use(cookieParser());
+
+// Healthcheck — útil para monitoreo
+app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }));
+
+app.use('/api', router);
+
+// Error handler GLOBAL — siempre al final
+app.use(errorHandler);
+
+app.listen(PORT, () => {
+  console.log(`🚀 RestaurantOS backend corriendo en http://localhost:${PORT}`);
+});
+
+export default app;
