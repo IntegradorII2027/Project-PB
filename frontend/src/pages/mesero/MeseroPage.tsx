@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShoppingCart, Plus, Minus, CheckCircle, Utensils, LayoutDashboard } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Plus, Minus, CheckCircle, Utensils, Grid2X2 } from 'lucide-react';
 import { mesasService } from '../../services/mesas.service';
 import { menuService } from '../../services/menu.service';
 import { pedidosService } from '../../services/pedidos.service';
@@ -124,11 +124,11 @@ export default function MeseroPage() {
           <span className="font-bold text-foreground text-lg flex-1">RestaurantOS</span>
           <span className="text-muted-foreground text-sm">Mesero</span>
           <button
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/mesas')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-muted-foreground hover:text-foreground text-sm transition-colors"
           >
-            <LayoutDashboard size={15} />
-            <span>Panel</span>
+            <Grid2X2 size={15} />
+            <span>Mesas</span>
           </button>
         </header>
 
