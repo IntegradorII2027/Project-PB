@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // directUrl → pooler session mode (puerto 5432) para migraciones/db push.
+  // Runtime usa DATABASE_URL con pgbouncer (puerto 6543).
+  directUrl = env("DIRECT_URL")
+}
+
+// ── Dueño ────────────────────────────────────────────────────────────────────
+// Propietario del negocio. Puede tener múltiples sucursales.
+// Siempre puede iniciar sesión (no depende del estado abierto/cerrado).
+model Dueno {
+  id           String     @id @default(cuid())
+  nombre       String
+  email        String     @unique
+  passwordHash String
+  activo       Boolean    @default(true)
+  sucursales   Sucursal[]
+  creadoEn     DateTime   @default(now())
+}
+
+// ── Sucursal ─────────────────────────────────────────────────────────────────
+// Cada local del negocio. Reemplaza al modelo Restaurante.
+// abierto: controla si el sistema está activo para ese local.
+model Sucursal {
+  id              String      @id @default(cuid())
+  nombre          String
+  direccion       String?
+  telefono        String?
+  logo            String?
+  abierto         Boolean     @default(false)
+  horarioApertura String?     // formato "HH:MM", ej: "08:00"
+  horarioCierre   String?     // formato "HH:MM", ej: "22:00"
+  diasOperacion   String?     // ej: "LUN-SAB"
+  duenoId         String
+  dueno           Dueno       @relation(fields: [duenoId], references: [id])
+  usuarios        Usuario[]
+  mesas           Mesa[]
+  categorias      Categoria[]
+  productos       Producto[]
+  pedidos         Pedido[]
+  creadoEn        DateTime    @default(now())
+  actualizadoEn   DateTime    @updatedAt
+}
+
+// ── Usuario ───────────────────────────────────────────────────────────────────
+// Personal de cada sucursal. Solo puede iniciar sesión si la sucursal está abierta.
+model Usuario {
+  id           String   @id @default(cuid())
+  nombre       String
+  email        String   @unique
+  passwordHash String
+  rol          Rol
+  activo       Boolean  @default(true)
+  sucursalId   String
+  sucursal     Sucursal @relation(fields: [sucursalId], references: [id], onDelete: Cascade)
+  pedidos      Pedido[]
+  creadoEn     DateTime @default(now())
+}
+
+enum Rol {
+  ADMIN    // Gestiona su sucursal, puede abrir/cerrar
+  MESERO   // Toma pedidos, añade items, cobra
+  COCINERO // Ve y marca pedidos listos en cocina
+}
+
+// ── Mesa ──────────────────────────────────────────────────────────────────────
+model Mesa {
+  id         String     @id @default(cuid())
+  numero     Int
+  capacidad  Int        @default(4)
+  estado     EstadoMesa @default(LIBRE)
+  sucursalId String
+  sucursal   Sucursal   @relation(fields: [sucursalId], references: [id], onDelete: Cascade)
+  pedidos    Pedido[]
+}
+
+enum EstadoMesa {
+  LIBRE
+  OCUPADA
+  EN_ESPERA
+}
+
+// ── Categoria ─────────────────────────────────────────────────────────────────
+model Categoria {
+  id         String     @id @default(cuid())
+  nombre     String
+  sucursalId String
+  sucursal   Sucursal   @relation(fields: [sucursalId], references: [id], onDelete: Cascade)
+  productos  Producto[]
+}
+
+// ── Producto ──────────────────────────────────────────────────────────────────
+model Producto {
+  id             String      @id @default(cuid())
+  nombre         String
+  descripcion    String?
+  precio         Decimal
+  imagen         String?
+  disponible     Boolean     @default(true)
+  requiereCocina Boolean     @default(true)
+  categoriaId    String
+  categoria      Categoria   @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  sucursalId     String
+  sucursal       Sucursal    @relation(fields: [sucursalId], references: [id], onDelete: Cascade)
+  itemsPedido    ItemPedido[]
+}
+
+// ── Pedido ────────────────────────────────────────────────────────────────────
+model Pedido {
+  id            String       @id @default(cuid())
+  numero        Int          @default(autoincrement())
+  tipo          TipoPedido
+  estado        EstadoPedido @default(PENDIENTE)
+  mesaId        String?
+  mesa          Mesa?        @relation(fields: [mesaId], references: [id], onDelete: SetNull)
+  meseroId      String?
+  mesero        Usuario?     @relation(fields: [meseroId], references: [id], onDelete: SetNull)
+  sucursalId    String
+  sucursal      Sucursal     @relation(fields: [sucursalId], references: [id], onDelete: Cascade)
+  items         ItemPedido[]
+  pagado        Boolean      @default(false)
+  metodoPago    String?
+  total         Decimal?
+  creadoEn      DateTime     @default(now())
+  actualizadoEn DateTime     @updatedAt
+}
+
+enum TipoPedido {
+  EN_MESA
+  PARA_LLEVAR
+}
+
+enum EstadoPedido {
+  PENDIENTE
+  EN_COCINA
+  LISTO
+  ENTREGADO
+  PAGADO
+  CANCELADO
+}
+
+// ── ItemPedido ────────────────────────────────────────────────────────────────
+model ItemPedido {
+  id         String   @id @default(cuid())
+  pedidoId   String
+  pedido     Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  productoId String
+  producto   Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  cantidad   Int
+  precio     Decimal
+  subtotal   Decimal
+  servido    Boolean  @default(false)
+}
