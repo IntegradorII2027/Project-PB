@@ -41,8 +41,8 @@ const navMesero = [
 ];
 
 const navCocinero = [
+  { to: '/pedidos-cocina', icon: ClipboardList, label: 'Pedidos' },
   { to: '/configuracion', icon: Settings, label: 'Configuración' },
-  // { to: '/cocina', icon: ChefHat, label: 'Cocina' },
 ];
 
 interface SidebarProps {
