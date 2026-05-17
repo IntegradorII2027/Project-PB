@@ -4,14 +4,16 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-// GET /usuarios — listar usuarios (DUENO ve todos, ADMIN ve los de su sucursal)
+// GET /usuarios — listar usuarios (DUENO ve todos, ADMIN solo los de su sucursal)
 export async function getUsuarios(req: Request, res: Response): Promise<void> {
   const isDueno = req.user!.rol === 'DUENO';
+
+  // ADMIN: siempre filtrado por su propia sucursal, sin excepciones
+  // DUENO: puede filtrar por sucursalId query param, o ver todos si no pasa ninguno
   const sucursalId = isDueno
     ? (req.query.sucursalId as string | undefined)
-    : req.user!.sucursalId!;
+    : req.user!.sucursalId;
 
-  // Si no es DUENO y no tiene sucursalId, error
   if (!isDueno && !sucursalId) {
     res.status(400).json({ error: 'sucursalId no encontrado en el token' }); return;
   }

@@ -44,8 +44,9 @@ export default function UsuariosPage() {
   const [editing, setEditing] = useState<Usuario | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
 
+  // queryKey incluye sucursalId para que DUENO y ADMIN nunca compartan cache
   const { data: usuarios = [], isLoading } = useQuery({
-    queryKey: ['usuarios'],
+    queryKey: ['usuarios', user?.sucursalId ?? 'all'],
     queryFn: () => usuariosService.getAll(),
   });
 
@@ -58,7 +59,7 @@ export default function UsuariosPage() {
   const crear = useMutation({
     mutationFn: () => usuariosService.create(form),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['usuarios'] });
+      qc.invalidateQueries({ queryKey: ['usuarios', user?.sucursalId ?? 'all'] });
       toast.success('Usuario creado');
       closeModal();
     },
@@ -73,7 +74,7 @@ export default function UsuariosPage() {
       ...(form.password ? { password: form.password } : {}),
     }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['usuarios'] });
+      qc.invalidateQueries({ queryKey: ['usuarios', user?.sucursalId ?? 'all'] });
       toast.success('Usuario actualizado');
       closeModal();
     },
@@ -83,7 +84,7 @@ export default function UsuariosPage() {
   const eliminar = useMutation({
     mutationFn: (id: string) => usuariosService.delete(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['usuarios'] });
+      qc.invalidateQueries({ queryKey: ['usuarios', user?.sucursalId ?? 'all'] });
       toast.success('Usuario eliminado');
     },
     onError: (e: any) => toast.error(e?.response?.data?.error ?? 'Error al eliminar'),
