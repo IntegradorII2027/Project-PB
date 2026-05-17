@@ -1,12 +1,21 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, Building2, Users, Settings,
-  UtensilsCrossed, LogOut, X, ChevronRight,
+  LayoutDashboard,
+  Building2,
+  Users,
+  Settings,
+  UtensilsCrossed,
+  ClipboardList,
+  Grid2X2,
+  BarChart3,
+  CalendarCheck2,
+  LogOut,
+  X,
+  ChevronRight,
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useAuthStore } from '../../store/authStore';
 
-// Navegación según rol — cada array solo incluye rutas accesibles para ese rol
 const navDueno = [
   { to: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/sucursales',   icon: Building2,       label: 'Sucursales' },
@@ -14,23 +23,23 @@ const navDueno = [
 ];
 
 const navAdmin = [
-  { to: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/usuarios',     icon: Users,           label: 'Usuarios' },
-  { to: '/configuracion',icon: Settings,        label: 'Configuración' },
-  // El equipo puede agregar aquí:
-  // { to: '/mesas',     icon: Grid2X2,         label: 'Mesas' },
-  // { to: '/menu',      icon: Utensils,        label: 'Menú' },
-  // { to: '/reportes',  icon: BarChart2,       label: 'Reportes' },
+  { to: '/dashboard',     icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/reportes',      icon: BarChart3,       label: 'Reportes' },
+  { to: '/pedidos',       icon: ClipboardList,   label: 'Pedidos' },
+  { to: '/mesas',         icon: Grid2X2,         label: 'Mesas' },
+  { to: '/menu',          icon: UtensilsCrossed, label: 'Menú' },
+  { to: '/personal',      icon: Users,           label: 'Personal' },
+  { to: '/asistencias',   icon: CalendarCheck2,  label: 'Asistencias' },
+
+  { to: '/configuracion', icon: Settings,        label: 'Configuración' },
 ];
 
-// MESERO: solo configuración hasta que el equipo agregue /mesas y /pedidos
 const navMesero = [
   { to: '/configuracion', icon: Settings, label: 'Configuración' },
   // { to: '/mesas',   icon: Grid2X2,       label: 'Mesas' },
   // { to: '/pedidos', icon: ClipboardList, label: 'Pedidos' },
 ];
 
-// COCINERO: solo configuración hasta que el equipo agregue /cocina
 const navCocinero = [
   { to: '/configuracion', icon: Settings, label: 'Configuración' },
   // { to: '/cocina', icon: ChefHat, label: 'Cocina' },
