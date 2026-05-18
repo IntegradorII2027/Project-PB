@@ -11,6 +11,8 @@ import { useAuthStore } from './store/authStore';
 import PedidosCocinaPage from './pages/pedidos-cocina/PedidosCocinaPage';
 import AsistenciasPage from './pages/administrador/asistencias/AsistenciasPages';
 import MenuPage from './pages/administrador/menu/MenuPage';
+import ReportesPage from './pages/administrador/reportes/ReportesPage';
+import MesasPage from './pages/administrador/Mesas/MesasPage';
 
 const qc = new QueryClient({
   defaultOptions: {
@@ -99,6 +101,8 @@ export default function App() {
             <Route path="/pedidos-cocina" element={<PedidosCocinaPage />} />
             <Route path="/asistencias" element={<AsistenciasPage />} />
             <Route path="/menu" element={<MenuPage />} />
+            <Route path="/reportes" element={<ReportesPage />} />
+            <Route path="/mesas" element={<MesasPage />} />
             {/* El equipo puede agregar más rutas aquí:
             <Route path="/mesas"    element={<MesasPage />} />
             <Route path="/pedidos"  element={<PedidosPage />} />

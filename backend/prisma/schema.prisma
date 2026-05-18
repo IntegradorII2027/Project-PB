@@ -10,45 +10,32 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// ── Dueño ────────────────────────────────────────────────────────────────────
-// Propietario del negocio. Puede tener múltiples sucursales.
-// Siempre puede iniciar sesión (no depende del estado abierto/cerrado).
-model Dueno {
-  id           String     @id @default(cuid())
-  nombre       String
-  email        String     @unique
-  passwordHash String
-  activo       Boolean    @default(true)
-  sucursales   Sucursal[]
-  creadoEn     DateTime   @default(now())
-}
-
-// ── Sucursal ─────────────────────────────────────────────────────────────────
-// Cada local del negocio. Reemplaza al modelo Restaurante.
-// abierto: controla si el sistema está activo para ese local.
 model Sucursal {
-  id              String      @id @default(cuid())
+  id              String   @id @default(cuid())
   nombre          String
   direccion       String?
   telefono        String?
-  logo            String?
-  abierto         Boolean     @default(false)
-  horarioApertura String?     // formato "HH:MM", ej: "08:00"
-  horarioCierre   String?     // formato "HH:MM", ej: "22:00"
-  diasOperacion   String?     // ej: "LUN-SAB"
+
+  abierto         Boolean  @default(false)
+
+  horarioApertura String?
+  horarioCierre   String?
+  diasOperacion   String?
+
   duenoId         String
-  dueno           Dueno       @relation(fields: [duenoId], references: [id])
-  usuarios        Usuario[]
+  dueno           Usuario  @relation("DuenoSucursal", fields: [duenoId], references: [id])
+
+  usuarios        Usuario[] @relation("UsuarioSucursal")
   mesas           Mesa[]
   categorias      Categoria[]
   productos       Producto[]
   pedidos         Pedido[]
-  creadoEn        DateTime    @default(now())
-  actualizadoEn   DateTime    @updatedAt
+  asistencias     Asistencia[]
+
+  creadoEn        DateTime @default(now())
+  actualizadoEn   DateTime @updatedAt
 }
 
-// ── Usuario ───────────────────────────────────────────────────────────────────
-// Personal de cada sucursal. Solo puede iniciar sesión si la sucursal está abierta.
 model Usuario {
   id           String   @id @default(cuid())
   nombre       String
@@ -56,16 +43,40 @@ model Usuario {
   passwordHash String
   rol          Rol
   activo       Boolean  @default(true)
-  sucursalId   String
-  sucursal     Sucursal @relation(fields: [sucursalId], references: [id], onDelete: Cascade)
+
+  sucursalId   String?
+  sucursal     Sucursal? @relation("UsuarioSucursal", fields: [sucursalId], references: [id], onDelete: Cascade)
+
+  duenoDe      Sucursal[] @relation("DuenoSucursal")
+
   pedidos      Pedido[]
+  asistencias  Asistencia[]
   creadoEn     DateTime @default(now())
 }
+
+model Asistencia {
+  id            String   @id @default(cuid())
+  usuarioId     String
+  usuario       Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  sucursalId    String
+  sucursal      Sucursal @relation(fields: [sucursalId], references: [id], onDelete: Cascade)
+  fecha         DateTime @db.Date
+  presente      Boolean  @default(false)
+  tardanza      Boolean  @default(false)
+  horaEntrada   DateTime?
+  horaSalida    DateTime?
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  @@unique([usuarioId, fecha])
+}
+
 
 enum Rol {
   ADMIN    // Gestiona su sucursal, puede abrir/cerrar
   MESERO   // Toma pedidos, añade items, cobra
   COCINERO // Ve y marca pedidos listos en cocina
+  DUENO
 }
 
 // ── Mesa ──────────────────────────────────────────────────────────────────────
