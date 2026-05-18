@@ -18,7 +18,7 @@ api.interceptors.response.use(
   (res) => res,
   (error) => {
     const status = error.response?.status;
-    if (status === 401) {
+    if (status === 401 && window.location.pathname !== '/login') {
       useAuthStore.getState().logout();
       window.location.href = '/login';
     }

@@ -13,23 +13,22 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) { toast.error('Completa todos los campos'); return; }
+  const handleSubmit = async () => {
+    if (!email || !password) { setError('Completa todos los campos'); return; }
     setLoading(true);
     try {
       const { user, token } = await authService.login(email, password);
       setAuth(user, token);
       navigate('/dashboard', { replace: true });
     } catch (err: any) {
-      const msg = err?.response?.data?.error ?? 'Error al iniciar sesión';
-      toast.error(msg);
+      const msg = err?.response?.data?.error ?? 'Credenciales incorrectas';
+      setError(msg);
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
@@ -46,7 +45,7 @@ export default function LoginPage() {
         <div className="bg-white rounded-2xl shadow-card border border-border p-8">
           <h2 className="text-lg font-semibold text-text mb-6">Iniciar sesión</h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-4">
             <div>
               <label className="text-sm font-medium text-text block mb-1.5" htmlFor="email">
                 Correo electrónico
@@ -72,6 +71,7 @@ export default function LoginPage() {
                   type={showPass ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
                   placeholder="••••••••"
                   className="w-full border border-border rounded-lg px-3 py-2.5 pr-10 text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                   autoComplete="current-password"
@@ -86,11 +86,16 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
-
-            <Button type="submit" className="w-full mt-2" size="lg" loading={loading}>
+            {error && (
+                <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg px-3 py-2.5">
+                  <span>⚠</span>
+                  {error}
+                </div>
+            )}
+            <Button type="button" onClick={handleSubmit} className="w-full mt-2" size="lg" loading={loading}>
               Entrar
             </Button>
-          </form>
+          </div>
         </div>
 
         <p className="text-center text-xs text-text-muted mt-6">
