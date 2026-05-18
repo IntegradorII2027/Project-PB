@@ -4,9 +4,16 @@ import { login, me } from '../controllers/auth.controller';
 import { getSucursales, getSucursalById, createSucursal, updateSucursal, toggleSucursal, deleteSucursal } from '../controllers/sucursales.controller';
 import { getUsuarios, createUsuario, updateUsuario, deleteUsuario, updateMe, changeMyPassword } from '../controllers/usuarios.controller';
 import { getDashboardDueno, getDashboardSucursal } from '../controllers/dashboard.controller';
+import { getAsistencias, toggleAsistencia } from '../controllers/asistencias.controller';
+
+console.log({
+  login,
+  me,
+  getDashboardDueno,
+  getDashboardSucursal
+});
 
 const router = Router();
-
 // ── Auth (público) ────────────────────────────────────────────────────────────
 router.post('/auth/login', login);
 router.get('/auth/me', authMiddleware, me);
@@ -32,6 +39,10 @@ router.get('/usuarios', authMiddleware, roleMiddleware('DUENO', 'ADMIN'), getUsu
 router.post('/usuarios', authMiddleware, roleMiddleware('DUENO', 'ADMIN'), createUsuario);
 router.patch('/usuarios/:id', authMiddleware, roleMiddleware('DUENO', 'ADMIN'), updateUsuario);
 router.delete('/usuarios/:id', authMiddleware, roleMiddleware('DUENO', 'ADMIN'), deleteUsuario);
+
+// Asistencias ────────────────────────────────────────────────────────────────
+router.get('/asistencias', authMiddleware, roleMiddleware('DUENO', 'ADMIN'), getAsistencias);
+router.post('/asistencias/:id', authMiddleware, roleMiddleware('DUENO', 'ADMIN'), toggleAsistencia);
 
 // ── Placeholder: rutas que el equipo implementará ────────────────────────────
 // router.use('/mesas',    authMiddleware, mesasRouter);
