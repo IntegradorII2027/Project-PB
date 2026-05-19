@@ -5,6 +5,7 @@ import { AuthLayout } from './components/layout/AuthLayout';
 import LoginPage from './pages/auth/LoginPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import SucursalesPage from './pages/sucursales/SucursalesPage';
+import SucursalDetallePage from './pages/sucursales/SucursalDetallePage';
 import UsuariosPage from './pages/usuarios/UsuariosPage';
 import ConfiguracionPage from './pages/configuracion/ConfiguracionPage';
 import { useAuthStore } from './store/authStore';
@@ -13,6 +14,7 @@ import AsistenciasPage from './pages/administrador/asistencias/AsistenciasPages'
 import MenuPage from './pages/administrador/menu/MenuPage';
 import ReportesPage from './pages/administrador/reportes/ReportesPage';
 import MesasPage from './pages/administrador/Mesas/MesasPage';
+import PedidosPage from './pages/administrador/pedidos/PedidosPage';
 
 const qc = new QueryClient({
   defaultOptions: {
@@ -86,6 +88,15 @@ export default function App() {
               }
             />
 
+            <Route
+              path="/sucursales/:id"
+              element={
+                <RequireDueno>
+                  <SucursalDetallePage />
+                </RequireDueno>
+              }
+            />
+
             {/* DUENO y ADMIN */}
             <Route
               path="/usuarios"
@@ -103,6 +114,7 @@ export default function App() {
             <Route path="/menu" element={<MenuPage />} />
             <Route path="/reportes" element={<ReportesPage />} />
             <Route path="/mesas" element={<MesasPage />} />
+            <Route path="/pedidos" element={<PedidosPage />} />
             {/* El equipo puede agregar más rutas aquí:
             <Route path="/mesas"    element={<MesasPage />} />
             <Route path="/pedidos"  element={<PedidosPage />} />
