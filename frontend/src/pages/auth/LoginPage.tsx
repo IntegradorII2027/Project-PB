@@ -14,8 +14,12 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [intentos, setIntentos] = useState(0);
+  const [bloqueado, setBloqueado] = useState(false);
+  const [contador, setContador] = useState(60);
 
   const handleSubmit = async () => {
+    if (bloqueado) return;
     if (!email || !password) { setError('Completa todos los campos'); return; }
     setLoading(true);
     try {
@@ -25,10 +29,29 @@ export default function LoginPage() {
     } catch (err: any) {
       const msg = err?.response?.data?.error ?? 'Credenciales incorrectas';
       setError(msg);
+      const nuevosIntentos = intentos + 1;
+      setIntentos(nuevosIntentos);
+      if (nuevosIntentos >= 3) {
+        setBloqueado(true);
+        setError('');
+        setContador(60);
+        const interval = setInterval(() => {
+          setContador((prev) => {
+            if (prev <= 1) {
+              clearInterval(interval);
+              setBloqueado(false);
+              setIntentos(0);
+              return 60;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      }
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
@@ -86,13 +109,21 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
-            {error && (
+            {bloqueado ? (
+              <div className="flex flex-col items-center gap-1 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg px-3 py-3 text-center">
+                <span className="font-semibold">⚠ Límite de intentos alcanzado</span>
+                <span className="text-xs text-red-400">Intenta de nuevo en <span className="font-bold text-red-600">{contador}s</span></span>
+              </div>
+            ) : (
+              error && (
                 <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg px-3 py-2.5">
                   <span>⚠</span>
                   {error}
                 </div>
+              )
             )}
-            <Button type="button" onClick={handleSubmit} className="w-full mt-2" size="lg" loading={loading}>
+
+            <Button type="button" onClick={handleSubmit} className="w-full mt-2" size="lg" loading={loading} disabled={bloqueado}>
               Entrar
             </Button>
           </div>
