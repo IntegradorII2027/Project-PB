@@ -28,12 +28,10 @@ export async function getPedidosAdmin(
 
         const where: any = {};
 
-        // ADMIN → solo su sucursal
         if (user.rol === 'ADMIN') {
             where.sucursalId = user.sucursalId;
         }
 
-        // DUENO → todas sus sucursales
         if (user.rol === 'DUENO') {
             where.sucursal = {
                 duenoId: user.userId,

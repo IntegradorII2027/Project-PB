@@ -80,10 +80,13 @@ export default function PedidosPage() {
         }
       );
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
-      setPedidos(data);
+      if (!response.ok) {
+        throw new Error(data.error || 'Error');
+      }
+
+      setPedidos(Array.isArray(data) ? data : []);
 
     } catch (error) {
       console.error(
@@ -116,10 +119,11 @@ export default function PedidosPage() {
     );
   };
 
-  const pedidosFiltrados =
-    useMemo(() => {
-      return pedidos;
-    }, [pedidos]);
+  const pedidosFiltrados = useMemo(() => {
+    return Array.isArray(pedidos)
+      ? pedidos
+      : [];
+  }, [pedidos]);
 
   const imprimirPedido = () => {
     if (!pedidoSeleccionado) return;

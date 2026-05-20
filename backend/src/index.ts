@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3001;
 
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000,
-  max: 6,
+  max: 1000,
   message: { error: 'Demasiadas peticiones, intenta más tarde' },
 });
 
