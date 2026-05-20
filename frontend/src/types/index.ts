@@ -14,7 +14,13 @@ export interface Sucursal {
   diasOperacion?: string;
   duenoId: string;
   creadoEn: string;
-  _count?: { usuarios: number; mesas: number; productos: number };
+  actualizadoEn?: string;
+  _count?: {
+    usuarios?: number;
+    mesas?: number;
+    productos?: number;
+    pedidos?: number;
+  };
 }
 
 export interface Usuario {
@@ -51,4 +57,10 @@ export interface DashboardSucursal {
   mesasOcupadas: number;
   totalMesas: number;
   pedidosActivos: any[];
+  topProductos?: {
+    id: string;
+    nombre: string;
+    cantidad: number;
+    total: number;
+  }[];
 }
