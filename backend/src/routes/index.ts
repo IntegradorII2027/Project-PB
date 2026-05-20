@@ -5,6 +5,7 @@ import { getSucursales, getSucursalById, createSucursal, updateSucursal, toggleS
 import { getUsuarios, createUsuario, updateUsuario, deleteUsuario, updateMe, changeMyPassword } from '../controllers/usuarios.controller';
 import { getDashboardDueno, getDashboardSucursal } from '../controllers/dashboard.controller';
 import { getAsistencias, toggleAsistencia } from '../controllers/asistencias.controller';
+import { getReporteDueno } from '../controllers/reportes.controller';
 import { crearMesa, getMesas, actualizarMesa } from '../controllers/mesa.controller';
 import {crearCategoria, listarCategorias, crearProducto, listarProductos, actualizarProducto, eliminarProducto, obtenerProducto, toggleDisponibilidad} from '../controllers/menu.controller';
 
@@ -38,6 +39,9 @@ router.delete('/usuarios/:id', authMiddleware, roleMiddleware('DUENO', 'ADMIN'),
 // Asistencias ────────────────────────────────────────────────────────────────
 router.get('/asistencias', authMiddleware, roleMiddleware('DUENO', 'ADMIN'), getAsistencias);
 router.post('/asistencias/:id', authMiddleware, roleMiddleware('DUENO', 'ADMIN'), toggleAsistencia);
+
+// ── Reportes ─────────────────────────────────────────────────────────────────
+router.get('/reportes/dueno', authMiddleware, roleMiddleware('DUENO'), getReporteDueno);
 
 // Mesas ────────────────────────────────────────────────────────────────
 router.get('/mesas', authMiddleware, roleMiddleware('ADMIN'), getMesas);
