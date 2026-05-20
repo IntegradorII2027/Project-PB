@@ -1,12 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { AuthUser } from '../types';
+import { api } from '../services/api';
 
 interface AuthState {
   user: AuthUser | null;
   token: string | null;
   setAuth: (user: AuthUser, token: string) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -15,7 +16,14 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       setAuth: (user, token) => set({ user, token }),
-      logout: () => set({ user: null, token: null }),
+      logout: async () => {
+        try {
+          await api.post('/auth/logout');
+        } catch {
+        } finally {
+          set({ user: null, token: null });
+        }
+      },
     }),
     {
       name: 'restaurantos-auth',

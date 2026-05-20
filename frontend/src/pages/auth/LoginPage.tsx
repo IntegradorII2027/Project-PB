@@ -101,7 +101,7 @@ export default function LoginPage() {
                   id="password"
                   type={showPass ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value.trim())}
                   onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
                   placeholder="••••••••"
                   className="w-full border border-border rounded-lg px-3 py-2.5 pr-10 text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"

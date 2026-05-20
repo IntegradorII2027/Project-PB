@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { addToBlacklist } from '../utils/tokenBlacklist';
+import { logger } from '../utils/logger';
 
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret';
@@ -41,6 +43,7 @@ export async function login(req: Request, res: Response): Promise<void> {
 
   if (!ok || !usuario.activo) {
     const nuevosIntentos = usuario.intentosFallidos + 1;
+    logger.warn(`Login fallido para: ${email} — intento ${nuevosIntentos}/3`);
     const bloqueadoHasta = nuevosIntentos >= 3
       ? new Date(Date.now() + 60 * 1000)
       : null;
@@ -54,6 +57,7 @@ export async function login(req: Request, res: Response): Promise<void> {
     });
 
     if (nuevosIntentos >= 3) {
+      logger.warn(`Cuenta bloqueada: ${email}`);
       res.status(429).json({
         error: 'Cuenta bloqueada temporalmente',
         bloqueadoHasta,
@@ -78,7 +82,7 @@ export async function login(req: Request, res: Response): Promise<void> {
     where: { email },
     data: { intentosFallidos: 0, bloqueadoHasta: null },
   });
-
+  logger.info(`Login exitoso: ${email} (${usuario.rol})`);
   const token = jwt.sign(
     { userId: usuario.id, rol: usuario.rol, sucursalId: usuario.sucursalId },
     JWT_SECRET,
@@ -121,4 +125,11 @@ export const me = async (req: Request, res: Response) => {
       ? { id: usuario.sucursal.id, nombre: usuario.sucursal.nombre }
       : null,
   });
+};
+
+export const logout = (req: Request, res: Response) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (token) addToBlacklist(token);
+  logger.info(`Logout: userId ${req.user?.userId}`);
+  res.json({ message: 'Sesión cerrada' });
 };
