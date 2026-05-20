@@ -9,6 +9,7 @@ import { crearMesa, getMesas, actualizarMesa } from '../controllers/mesa.control
 import { crearCategoria, listarCategorias, crearProducto, listarProductos, actualizarProducto, eliminarProducto, obtenerProducto, toggleDisponibilidad } from '../controllers/menu.controller';
 import { exportarReporteExcel, getReportes } from '../controllers/reportes.controller';
 import { getPedidosAdmin } from '../controllers/pedidos-admin.controller';
+import { marcarPedidoListo, obtenerPedidosCocina } from '../controllers/pedidos-cocina.controller';
 
 const router = Router();
 // Auth 
@@ -64,6 +65,9 @@ router.get('/reportes/exportar', authMiddleware, roleMiddleware('DUENO', 'ADMIN'
 // Pedidos
 router.get('/pedidos', authMiddleware, roleMiddleware('DUENO', 'ADMIN'), getPedidosAdmin);
 
+// Cocina
+router.get('/pedidos-cocina', authMiddleware, roleMiddleware('COCINERO'), obtenerPedidosCocina);
+router.patch('/pedidos-cocina/:id/listo', authMiddleware, roleMiddleware('COCINERO'), marcarPedidoListo);
 
 
 // router.use('/pedidos',  authMiddleware, pedidosRouter);
