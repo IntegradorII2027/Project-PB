@@ -16,21 +16,12 @@ export const obtenerPedidosCocina = async (
             });
         }
 
-        if (!sucursalId) {
-            return res.status(401).json({
-                message: 'Sucursal no válida en el token',
-            });
-        }
-
         const pedidos = await prisma.pedido.findMany({
             where: {
                 sucursalId,
-                estado: {
-                    in: [
-                        EstadoPedido.PENDIENTE,
-                        EstadoPedido.EN_COCINA,
-                    ],
-                },
+
+                estado: EstadoPedido.PENDIENTE,
+
                 items: {
                     some: {
                         producto: {
@@ -39,14 +30,17 @@ export const obtenerPedidosCocina = async (
                     },
                 },
             },
+
             include: {
                 mesa: true,
+
                 items: {
                     include: {
                         producto: true,
                     },
                 },
             },
+
             orderBy: {
                 creadoEn: 'asc',
             },
@@ -54,15 +48,25 @@ export const obtenerPedidosCocina = async (
 
         const pedidosFormateados = pedidos.map((pedido) => ({
             id: pedido.id,
+
             mesa: pedido.mesa
                 ? `Mesa ${pedido.mesa.numero}`
                 : 'Para llevar',
+
             cliente: 'Cliente',
+
             creadoEn: pedido.creadoEn,
+
             estado: pedido.estado,
-            platos: pedido.items.map(
-                (item) => `${item.producto.nombre} x${item.cantidad}`
-            ),
+
+            platos: pedido.items
+                .filter(
+                    (item) => item.producto.requiereCocina
+                )
+                .map(
+                    (item) =>
+                        `${item.producto.nombre} x${item.cantidad}`
+                ),
         }));
 
         return res.json(pedidosFormateados);

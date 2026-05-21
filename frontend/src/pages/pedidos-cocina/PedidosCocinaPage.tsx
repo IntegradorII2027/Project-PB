@@ -44,11 +44,6 @@ export default function PedidosCocinaPage() {
 
   const obtenerPedidos = async () => {
     try {
-
-      if (pedidos.length === 0) {
-        setLoading(true);
-      }
-
       const response = await fetch(
         `http://localhost:3001/api/pedidos-cocina`,
         {
@@ -68,7 +63,6 @@ export default function PedidosCocinaPage() {
       }
 
       if (Array.isArray(data)) {
-
         const pedidosActuales = JSON.stringify(pedidosRef.current);
         const nuevosPedidos = JSON.stringify(data);
 
@@ -133,6 +127,12 @@ export default function PedidosCocinaPage() {
 
   useEffect(() => {
     obtenerPedidos();
+
+    const interval = setInterval(() => {
+      obtenerPedidos();
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -149,7 +149,7 @@ export default function PedidosCocinaPage() {
           </h1>
 
           <p className="text-text-muted text-sm">
-            Gestiona los pedidos pendientes y en preparación
+            Gestiona los pedidos pendientes
           </p>
         </div>
       </div>
@@ -180,20 +180,10 @@ export default function PedidosCocinaPage() {
                   <h2 className="text-lg font-bold text-text">
                     {pedido.mesa}
                   </h2>
-
-                  <p className="text-sm text-text-muted">
-                    Cliente: {pedido.cliente}
-                  </p>
                 </div>
 
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold
-                  ${pedido.estado === 'Pendiente'
-                      ? 'bg-yellow-100 text-yellow-700'
-                      : 'bg-blue-100 text-blue-700'
-                    }`}
-                >
-                  {pedido.estado}
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                  Pendiente
                 </span>
               </div>
 

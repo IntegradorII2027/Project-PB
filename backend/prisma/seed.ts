@@ -244,10 +244,10 @@ async function main() {
 
     const estadosPedidos = [
         'PENDIENTE',
-        'EN_COCINA',
         'PENDIENTE',
-        'EN_COCINA',
+        'PENDIENTE',
         'LISTO',
+        'PAGADO',
     ];
 
     for (let index = 0; index < pedidosDemo.length; index++) {
@@ -268,7 +268,7 @@ async function main() {
 
                 estado: estadosPedidos[index] as any,
 
-                pagado: false,
+                pagado: estadosPedidos[index] === 'PAGADO',
 
                 total,
 
@@ -298,7 +298,7 @@ async function main() {
         });
 
         console.log(
-            `🍳 Pedido ${pedido.numero} creado (${pedido.estado})`
+            `🧾 Pedido ${pedido.numero} creado (${pedido.estado})`
         );
     }
 
