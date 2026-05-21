@@ -14,6 +14,7 @@ import {
   CalendarDays,
   ClipboardList,
   Crown,
+  Download,
   Package,
   ReceiptText,
   RefreshCcw,
@@ -32,6 +33,47 @@ function formatInputDateLabel(value: string) {
   if (!value) return '';
   const [year, month, day] = value.split('-');
   return `${day}/${month}/${year}`;
+}
+
+function escapeCsvValue(value: unknown) {
+  if (value === null || value === undefined) return '';
+
+  const text = String(value).replace(/"/g, '""');
+
+  if (text.includes(';') || text.includes('"') || text.includes('\n')) {
+    return `"${text}"`;
+  }
+
+  return text;
+}
+
+function createCsvSection(title: string, rows: unknown[][]) {
+  const section = [
+    [title],
+    ...rows,
+    [],
+  ];
+
+  return section
+    .map((row) => row.map(escapeCsvValue).join(';'))
+    .join('\n');
+}
+
+function downloadCsv(filename: string, content: string) {
+  const blob = new Blob([`\uFEFF${content}`], {
+    type: 'text/csv;charset=utf-8;',
+  });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 function getRangoInicial() {
@@ -130,8 +172,11 @@ export default function ReportesDuenoPage() {
         sucursalId: sucursalId || undefined,
       }),
     enabled: !!desde && !!hasta,
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 60_000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    retry: false,
+    placeholderData: (previousData) => previousData,
   });
 
   const aplicarFiltroRapido = (filtro: Exclude<FiltroRapido, 'PERSONALIZADO'>) => {
@@ -171,6 +216,90 @@ export default function ReportesDuenoPage() {
   const sucursalTexto = sucursalSeleccionada
     ? sucursalSeleccionada.nombre
     : 'Todas las sucursales';
+
+
+  const exportarReporteCsv = () => {
+    if (!data) return;
+
+    const resumenRows = [
+      ['Campo', 'Valor'],
+      ['Periodo desde', formatInputDateLabel(desde)],
+      ['Periodo hasta', formatInputDateLabel(hasta)],
+      ['Sucursal', sucursalTexto],
+      ['Ventas totales', data.resumen.ventasTotales],
+      ['Pedidos pagados', data.resumen.pedidosPagados],
+      ['Ticket promedio', data.resumen.ticketPromedio],
+      [
+        'Producto más vendido',
+        data.resumen.productoMasVendido?.producto ?? 'Sin ventas',
+      ],
+      [
+        'Sucursal líder',
+        data.resumen.sucursalLider?.nombre ?? 'Sin ventas',
+      ],
+    ];
+
+    const ventasPorDiaRows = [
+      ['Fecha', 'Pedidos', 'Total'],
+      ...ventasPorDia.map((item) => [
+        item.fecha,
+        item.pedidos,
+        item.total,
+      ]),
+    ];
+
+    const ventasPorSucursalRows = [
+      ['Sucursal', 'Pedidos', 'Total'],
+      ...ventasPorSucursal.map((item) => [
+        item.sucursal,
+        item.pedidos,
+        item.total,
+      ]),
+    ];
+
+    const metodosPagoRows = [
+      ['Método de pago', 'Pedidos', 'Total'],
+      ...ventasPorMetodoPago.map((item) => [
+        item.metodoPago,
+        item.pedidos,
+        item.total,
+      ]),
+    ];
+
+    const productosRows = [
+      ['Producto', 'Cantidad', 'Total'],
+      ...topProductos.map((item) => [
+        item.producto,
+        item.cantidad,
+        item.total,
+      ]),
+    ];
+
+    const detallePedidosRows = [
+      ['Pedido', 'Fecha', 'Sucursal', 'Mesero', 'Método de pago', 'Total'],
+      ...detallePedidos.map((pedido) => [
+        `#${pedido.numero}`,
+        formatDate(pedido.fecha),
+        pedido.sucursal,
+        pedido.mesero,
+        pedido.metodoPago || 'No registrado',
+        pedido.total,
+      ]),
+    ];
+
+    const csv = [
+      createCsvSection('REPORTE GENERAL DEL NEGOCIO', resumenRows),
+      createCsvSection('VENTAS POR DÍA', ventasPorDiaRows),
+      createCsvSection('VENTAS POR SUCURSAL', ventasPorSucursalRows),
+      createCsvSection('VENTAS POR MÉTODO DE PAGO', metodosPagoRows),
+      createCsvSection('PRODUCTOS MÁS VENDIDOS', productosRows),
+      createCsvSection('DETALLE DE PEDIDOS', detallePedidosRows),
+    ].join('\n');
+
+    const filename = `reporte-dueno-${desde}-a-${hasta}.csv`;
+
+    downloadCsv(filename, csv);
+  };
 
   return (
     <div className="space-y-6">
@@ -216,6 +345,16 @@ export default function ReportesDuenoPage() {
             >
               <RefreshCcw size={15} />
               Restablecer
+            </button>
+
+            <button
+              type="button"
+              onClick={exportarReporteCsv}
+              disabled={!data}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-primary text-primary hover:bg-primary hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Download size={15} />
+              Exportar CSV
             </button>
           </div>
 
