@@ -202,68 +202,104 @@ async function main() {
     const mesero = usuariosCreados.find(u => u.rol === Rol.MESERO)!;
 
     const pedidosDemo = [
-    {
-        mesaId: 'mesa-1',
-        items: [
-        { productoId: 'p-entero', cantidad: 1, precio: 55 },
-        { productoId: 'p-inca-g', cantidad: 2, precio: 10 },
-        ],
-    },
-    {
-        mesaId: 'mesa-2',
-        items: [
-        { productoId: 'p-cfamiliar', cantidad: 1, precio: 65 },
-        { productoId: 'p-papas', cantidad: 2, precio: 8 },
-        { productoId: 'p-chicha', cantidad: 3, precio: 6 },
-        ],
-    },
-    {
-        mesaId: 'mesa-3',
-        items: [
-        { productoId: 'p-medio', cantidad: 2, precio: 29 },
-        { productoId: 'p-ensalada', cantidad: 1, precio: 5 },
-        { productoId: 'p-inca-p', cantidad: 2, precio: 5 },
-        ],
-    },
-    {
-        mesaId: 'mesa-4',
-        items: [
-        { productoId: 'p-cduo', cantidad: 2, precio: 42 },
-        { productoId: 'p-agua', cantidad: 2, precio: 3 },
-        ],
-    },
-    {
-        mesaId: 'mesa-5',
-        items: [
-        { productoId: 'p-cuarto', cantidad: 4, precio: 16 },
-        { productoId: 'p-yuca', cantidad: 2, precio: 8 },
-        { productoId: 'p-aji', cantidad: 2, precio: 2 },
-        ],
-    },
+        {
+            mesaId: 'mesa-1',
+            items: [
+                { productoId: 'p-entero', cantidad: 1, precio: 55 },
+                { productoId: 'p-inca-g', cantidad: 2, precio: 10 },
+            ],
+        },
+        {
+            mesaId: 'mesa-2',
+            items: [
+                { productoId: 'p-cfamiliar', cantidad: 1, precio: 65 },
+                { productoId: 'p-papas', cantidad: 2, precio: 8 },
+                { productoId: 'p-chicha', cantidad: 3, precio: 6 },
+            ],
+        },
+        {
+            mesaId: 'mesa-3',
+            items: [
+                { productoId: 'p-medio', cantidad: 2, precio: 29 },
+                { productoId: 'p-ensalada', cantidad: 1, precio: 5 },
+                { productoId: 'p-inca-p', cantidad: 2, precio: 5 },
+            ],
+        },
+        {
+            mesaId: 'mesa-4',
+            items: [
+                { productoId: 'p-cduo', cantidad: 2, precio: 42 },
+                { productoId: 'p-agua', cantidad: 2, precio: 3 },
+            ],
+        },
+        {
+            mesaId: 'mesa-5',
+            items: [
+                { productoId: 'p-cuarto', cantidad: 4, precio: 16 },
+                { productoId: 'p-yuca', cantidad: 2, precio: 8 },
+                { productoId: 'p-aji', cantidad: 2, precio: 2 },
+            ],
+        },
     ];
 
-    for (const p of pedidosDemo) {
-    const total = p.items.reduce((acc, i) => acc + i.precio * i.cantidad, 0);
+    const estadosPedidos = [
+        'PENDIENTE',
+        'PENDIENTE',
+        'PENDIENTE',
+        'LISTO',
+        'PAGADO',
+    ];
 
-    await prisma.pedido.create({
-        data: {
-        mesaId: p.mesaId,
-        meseroId: mesero.id,
-        sucursalId: sucursal.id,
-        tipo: 'EN_MESA',
-        estado: 'PAGADO',
-        pagado: true,
-        total,
-        items: {
-            create: p.items.map(i => ({
-            productoId: i.productoId,
-            cantidad: i.cantidad,
-            precio: i.precio,
-            subtotal: i.precio * i.cantidad,
-            })),
-        },
-        },
-    });
+    for (let index = 0; index < pedidosDemo.length; index++) {
+        const p = pedidosDemo[index];
+
+        const total = p.items.reduce(
+            (acc, i) => acc + i.precio * i.cantidad,
+            0
+        );
+
+        const pedido = await prisma.pedido.create({
+            data: {
+                mesaId: p.mesaId,
+                meseroId: mesero.id,
+                sucursalId: sucursal.id,
+
+                tipo: 'EN_MESA',
+
+                estado: estadosPedidos[index] as any,
+
+                pagado: estadosPedidos[index] === 'PAGADO',
+
+                total,
+
+                creadoEn: new Date(
+                    Date.now() - (index + 1) * 1000 * 60 * 5
+                ),
+
+                items: {
+                    create: p.items.map((i) => ({
+                        productoId: i.productoId,
+                        cantidad: i.cantidad,
+                        precio: i.precio,
+                        subtotal: i.precio * i.cantidad,
+                    })),
+                },
+            },
+        });
+
+        await prisma.mesa.update({
+            where: {
+                id: p.mesaId,
+            },
+
+            data: {
+                estado: 'OCUPADA',
+            },
+        });
+
+        console.log(
+            `🧾 Pedido ${pedido.numero} creado (${pedido.estado})`
+        );
     }
 
     console.log('🧾 Pedidos de prueba creados');

@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, EstadoMesa } from "@prisma/client";
 
 const prisma = new PrismaClient();
+
 export const getMesas = async (req: Request, res: Response): Promise<void> => {
   try {
     const sucursalId = req.user?.sucursalId;
@@ -72,6 +73,18 @@ export const actualizarMesa = async (req: Request, res: Response): Promise<void>
 
     const { numero, capacidad, estado } = req.body;
 
+    const mesaExiste = await prisma.mesa.findFirst({
+      where: {
+        id,
+        sucursalId,
+      },
+    });
+
+    if (!mesaExiste) {
+      res.status(404).json({ message: "Mesa no encontrada" });
+      return;
+    }
+
     const mesa = await prisma.mesa.update({
       where: {
         id,
@@ -79,7 +92,7 @@ export const actualizarMesa = async (req: Request, res: Response): Promise<void>
       data: {
         numero: Number(numero),
         capacidad: Number(capacidad),
-        estado: estado as EstadoMesa, 
+        estado: estado as EstadoMesa,
       },
     });
 

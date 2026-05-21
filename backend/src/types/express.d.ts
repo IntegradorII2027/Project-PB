@@ -8,7 +8,6 @@ declare global {
         rol: Rol | 'DUENO';
         sucursalId?: string;
       };
-      sucursalId?: string;
     }
   }
 }
