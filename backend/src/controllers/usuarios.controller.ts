@@ -126,22 +126,19 @@ export async function updateMe(req: Request, res: Response): Promise<void> {
   const { nombre } = req.body;
   if (!nombre?.trim()) { res.status(400).json({ error: 'El nombre no puede estar vacío' }); return; }
 
-  // DUENO actualiza en tabla Dueno, los demás en Usuario
-  if (req.user!.rol === 'DUENO') {
-    const dueno = await prisma.dueno.update({
-      where: { id: userId },
-      data: { nombre },
-      select: { id: true, nombre: true, email: true },
-    });
-    res.json(dueno);
-    return;
-  }
-
   const usuario = await prisma.usuario.update({
     where: { id: userId },
-    data: { nombre },
-    select: { id: true, nombre: true, email: true, rol: true },
+    data: { nombre: nombre.trim() },
+    select: {
+      id: true,
+      nombre: true,
+      email: true,
+      rol: true,
+      sucursalId: true,
+      sucursal: { select: { id: true, nombre: true } },
+    },
   });
+
   res.json(usuario);
 }
 
@@ -156,19 +153,28 @@ export async function changeMyPassword(req: Request, res: Response): Promise<voi
     res.status(400).json({ error: 'La nueva contraseña debe tener al menos 6 caracteres' }); return;
   }
 
-  if (req.user!.rol === 'DUENO') {
-    const dueno = await prisma.dueno.findUnique({ where: { id: userId } });
-    if (!dueno) { res.status(404).json({ error: 'Usuario no encontrado' }); return; }
-    const ok = await bcrypt.compare(passwordActual, dueno.passwordHash);
-    if (!ok) { res.status(401).json({ error: 'Contraseña actual incorrecta' }); return; }
-    await prisma.dueno.update({ where: { id: userId }, data: { passwordHash: await bcrypt.hash(passwordNueva, 10) } });
-  } else {
-    const usuario = await prisma.usuario.findUnique({ where: { id: userId } });
-    if (!usuario) { res.status(404).json({ error: 'Usuario no encontrado' }); return; }
-    const ok = await bcrypt.compare(passwordActual, usuario.passwordHash);
-    if (!ok) { res.status(401).json({ error: 'Contraseña actual incorrecta' }); return; }
-    await prisma.usuario.update({ where: { id: userId }, data: { passwordHash: await bcrypt.hash(passwordNueva, 10) } });
+  const usuario = await prisma.usuario.findUnique({
+    where: { id: userId },
+  });
+
+  if (!usuario) {
+    res.status(404).json({ error: 'Usuario no encontrado' });
+    return;
   }
+
+  const ok = await bcrypt.compare(passwordActual, usuario.passwordHash);
+
+  if (!ok) {
+    res.status(401).json({ error: 'Contraseña actual incorrecta' });
+    return;
+  }
+
+  await prisma.usuario.update({
+    where: { id: userId },
+    data: {
+      passwordHash: await bcrypt.hash(passwordNueva, 10),
+    },
+  });
 
   res.json({ mensaje: 'Contraseña actualizada correctamente' });
 }
