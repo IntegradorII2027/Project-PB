@@ -21,7 +21,7 @@ import PedidosCocinaPage from './pages/pedidos-cocina/PedidosCocinaPage';
 
 import AsistenciasPage from './pages/administrador/asistencias/AsistenciasPages';
 import MenuPage from './pages/administrador/menu/MenuPage';
-import ReportesPage from './pages/administrador/reportes/ReportesPage';
+import ReportesPage from './pages/reportes/ReportesPage';
 import MesasPage from './pages/administrador/Mesas/MesasPage';
 import PedidosPage from './pages/administrador/pedidos/PedidosPage';
 
