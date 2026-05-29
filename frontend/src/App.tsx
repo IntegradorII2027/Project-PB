@@ -85,6 +85,23 @@ function AppRoutes() {
 
   if (!authReady) return null;
 
+function RequireMesero({ children }: { children: React.ReactNode }) {
+  const { user } = useAuthStore();
+  if (user?.rol !== 'MESERO') {
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+}
+
+function RequireSoloAdmin({ children }: { children: React.ReactNode }) {
+  const { user } = useAuthStore();
+  if (user?.rol !== 'ADMIN') {
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+}
+
+export default function App() {
   return (
     <Routes>
 
@@ -112,7 +129,133 @@ function AppRoutes() {
                 <SucursalesPage />
               </RequireRole>
             }
-          />
+          >
+            <Route
+              index
+              element={<HomeRedirect />}
+            />
+
+            <Route
+              path="/dashboard"
+              element={
+                <RequireAdmin>
+                  <DashboardPage />
+                </RequireAdmin>
+              }
+            />
+
+            <Route
+              path="/sucursales"
+              element={
+                <RequireDueno>
+                  <SucursalesPage />
+                </RequireDueno>
+              }
+            />
+
+            <Route
+              path="/sucursales/:id"
+              element={
+                <RequireDueno>
+                  <SucursalDetallePage />
+                </RequireDueno>
+              }
+            />
+
+            <Route
+              path="/usuarios"
+              element={
+                <RequireAdmin>
+                  <UsuariosPage />
+                </RequireAdmin>
+              }
+            />
+
+            <Route
+              path="/mesero/mesas"
+              element={
+                <RequireMesero>
+                  <MesasPageMesero />
+                </RequireMesero>
+              }
+            />
+            <Route
+              path="/mesero/pedido"
+              element={
+                <RequireMesero>
+                  <PedidoPage />
+                </RequireMesero>
+              }
+            />
+
+            <Route
+              path="/mesero/pedidos"
+              element={
+                <RequireMesero>
+                  <PedidosActivosPage />
+                </RequireMesero>
+              }
+            />
+        
+            <Route
+              path="/pedidos-cocina"
+              element={
+                <RequireCocinero>
+                  <PedidosCocinaPage />
+                </RequireCocinero>
+              }
+            />
+
+            <Route
+              path="/configuracion"
+              element={<ConfiguracionPage />}
+            />
+
+            <Route
+              path="/asistencias"
+              element={
+                <RequireSoloAdmin>
+                  <AsistenciasPage />
+                </RequireSoloAdmin>
+              }
+            />
+
+            <Route
+              path="/menu"
+              element={
+                <RequireSoloAdmin>
+                  <MenuPage />
+                </RequireSoloAdmin>
+              }
+            />
+
+            <Route
+              path="/reportes"
+              element={
+                <RequireAdmin>
+                  <ReportesPage />
+                </RequireAdmin>
+              }
+            />
+
+            <Route
+              path="/mesas"
+              element={
+                <RequireSoloAdmin>
+                  <MesasPage />
+                </RequireSoloAdmin>
+              }
+            />
+
+            <Route
+              path="/pedidos"
+              element={
+                <RequireSoloAdmin>
+                  <PedidosPage />
+                </RequireSoloAdmin>
+              }
+            />
+          </Route>
 
           <Route
             path="/sucursales/:id"
