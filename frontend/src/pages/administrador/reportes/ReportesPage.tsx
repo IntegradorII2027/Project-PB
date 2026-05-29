@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   CalendarDays,
   Download,
@@ -6,7 +6,8 @@ import {
   ClipboardList,
 } from 'lucide-react';
 
-import { useAuthStore } from '../../../store/authStore';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../../../services/api';
 
 interface VentaDia {
   dia: string;
@@ -38,86 +39,65 @@ interface ReportesResponse {
 }
 
 export default function ReportesPage() {
-  const token = useAuthStore((state) => state.token);
-
   const hoy = new Date().toISOString().split('T')[0];
 
   const hace7Dias = new Date();
   hace7Dias.setDate(hace7Dias.getDate() - 6);
 
-  const formatDate = (date: Date) => {
-    return date.toISOString().split('T')[0];
-  };
-
-  const [loading, setLoading] = useState(true);
+  const formatDate = (date: Date) => date.toISOString().split('T')[0];
 
   const [filtroRapido, setFiltroRapido] = useState<
     'HOY' | 'SEMANA' | 'MES' | 'PERSONALIZADO'
   >('SEMANA');
 
-  const [desde, setDesde] = useState(
-    formatDate(hace7Dias)
-  );
-
+  const [desde, setDesde] = useState(formatDate(hace7Dias));
   const [hasta, setHasta] = useState(hoy);
-
   const [meseroId, setMeseroId] = useState('');
 
-  const [ventasData, setVentasData] = useState<VentaDia[]>([]);
-  const [pedidosData, setPedidosData] = useState<PedidoDia[]>([]);
-  const [meserosData, setMeserosData] = useState<Mesero[]>([]);
-  const [meseros, setMeseros] = useState<MeseroSelect[]>([]);
+  const fetchReportes = async (): Promise<ReportesResponse> => {
+    const params = new URLSearchParams();
 
-  const [totalVentas, setTotalVentas] = useState(0);
-  const [cantidadPedidos, setCantidadPedidos] = useState(0);
+    if (desde) params.append('desde', desde);
+    if (hasta) params.append('hasta', hasta);
+    if (meseroId) params.append('meseroId', meseroId);
 
-  const maxVenta = useMemo(() => {
-    return Math.max(...ventasData.map((v) => v.monto), 1);
-  }, [ventasData]);
+    const { data } = await api.get<ReportesResponse>(
+      `/reportes?${params.toString()}`
+    );
 
-  const maxPedidos = useMemo(() => {
-    return Math.max(...pedidosData.map((p) => p.pedidos), 1);
-  }, [pedidosData]);
-
-  const maxMeseros = useMemo(() => {
-    return Math.max(...meserosData.map((m) => m.pedidos), 1);
-  }, [meserosData]);
-
-  const fetchReportes = async () => {
-    try {
-      setLoading(true);
-
-      const params = new URLSearchParams();
-
-      if (desde) params.append('desde', desde);
-      if (hasta) params.append('hasta', hasta);
-      if (meseroId) params.append('meseroId', meseroId);
-
-      const response = await fetch(
-        `http://localhost:3001/api/reportes?${params.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data: ReportesResponse = await response.json();
-
-      setVentasData(data.ventasPorDia);
-      setPedidosData(data.pedidosPorDia);
-      setMeserosData(data.rendimientoMeseros);
-      setMeseros(data.meseros);
-
-      setTotalVentas(data.totalVentas);
-      setCantidadPedidos(data.cantidadPedidos);
-
-    } catch (error) {
-      console.error('Error cargando reportes:', error);
-    } finally {
-      setLoading(false);
-    }
+    return data;
   };
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['reportes', desde, hasta, meseroId],
+    queryFn: fetchReportes,
+  });
+
+  console.log('ERROR:', error);
+
+
+  const ventasData = data?.ventasPorDia ?? [];
+  const pedidosData = data?.pedidosPorDia ?? [];
+  const meserosData = data?.rendimientoMeseros ?? [];
+  const meseros = data?.meseros ?? [];
+
+  const totalVentas = data?.totalVentas ?? 0;
+  const cantidadPedidos = data?.cantidadPedidos ?? 0;
+
+  const maxVenta = useMemo(
+    () => Math.max(...ventasData.map((v) => v.monto), 1),
+    [ventasData]
+  );
+
+  const maxPedidos = useMemo(
+    () => Math.max(...pedidosData.map((p) => p.pedidos), 1),
+    [pedidosData]
+  );
+
+  const maxMeseros = useMemo(
+    () => Math.max(...meserosData.map((m) => m.pedidos), 1),
+    [meserosData]
+  );
 
   const exportarExcel = async () => {
     try {
@@ -127,30 +107,21 @@ export default function ReportesPage() {
       if (hasta) params.append('hasta', hasta);
       if (meseroId) params.append('meseroId', meseroId);
 
-      const response = await fetch(
-        `http://localhost:3001/api/reportes/exportar?${params.toString()}`,
+      const response = await api.get(
+        `/reportes/exportar?${params.toString()}`,
         {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          responseType: 'blob',
         }
       );
 
-      if (!response.ok) {
-        throw new Error('Error exportando excel');
-      }
-
-      const blob = await response.blob();
-
-      const url = window.URL.createObjectURL(blob);
+      const url = window.URL.createObjectURL(
+        new Blob([response.data])
+      );
 
       const a = document.createElement('a');
 
       a.href = url;
-
-      a.download = `reporte-${desde || 'inicio'}-${hasta || 'fin'
-        }.xlsx`;
+      a.download = `reporte-${desde}-${hasta}.xlsx`;
 
       document.body.appendChild(a);
 
@@ -165,42 +136,31 @@ export default function ReportesPage() {
     }
   };
 
-  const aplicarFiltroRapido = (
-    tipo: 'HOY' | 'SEMANA' | 'MES'
-  ) => {
+  const aplicarFiltroRapido = (tipo: 'HOY' | 'SEMANA' | 'MES') => {
     const hoyDate = new Date();
 
     if (tipo === 'HOY') {
-      const fecha = formatDate(hoyDate);
-
-      setDesde(fecha);
-      setHasta(fecha);
+      const f = formatDate(hoyDate);
+      setDesde(f);
+      setHasta(f);
     }
 
     if (tipo === 'SEMANA') {
-      const semana = new Date();
-
-      semana.setDate(semana.getDate() - 6);
-
-      setDesde(formatDate(semana));
+      const d = new Date();
+      d.setDate(d.getDate() - 6);
+      setDesde(formatDate(d));
       setHasta(formatDate(hoyDate));
     }
 
     if (tipo === 'MES') {
-      const mes = new Date();
-
-      mes.setDate(mes.getDate() - 29);
-
-      setDesde(formatDate(mes));
+      const d = new Date();
+      d.setDate(d.getDate() - 29);
+      setDesde(formatDate(d));
       setHasta(formatDate(hoyDate));
     }
 
     setFiltroRapido(tipo);
   };
-
-  useEffect(() => {
-    fetchReportes();
-  }, [desde, hasta, meseroId]);
 
   return (
     <div className="p-6 bg-background min-h-screen">
@@ -329,7 +289,7 @@ export default function ReportesPage() {
               </p>
 
               <h2 className="text-4xl font-bold text-text">
-                {loading
+                {isLoading
                   ? '...'
                   : `S/ ${totalVentas.toLocaleString('es-PE')}`}
               </h2>
@@ -352,7 +312,7 @@ export default function ReportesPage() {
               </p>
 
               <h2 className="text-4xl font-bold text-text">
-                {loading ? '...' : cantidadPedidos}
+                {isLoading ? '...' : cantidadPedidos}
               </h2>
             </div>
 

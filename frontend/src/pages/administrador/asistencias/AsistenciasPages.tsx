@@ -7,16 +7,7 @@ import {
   XCircle,
   Loader2,
 } from 'lucide-react';
-import { useAuthStore } from  "../../../store/authStore";
-
-export const getAuthHeaders = () => {
-  const token = useAuthStore.getState().token;
-
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-};
+import { api } from '../../../services/api';
 
 interface Personal {
   id: string;
@@ -31,11 +22,6 @@ const ROL_LABELS = {
   MESERO: 'Mesero',
   COCINERO: 'Cocinero',
 };
-
-const API_URL = 'http://localhost:3001';
-
-
-
 
 const getInitials = (name: string) => {
   const parts = name.trim().split(' ').filter(Boolean);
@@ -62,18 +48,8 @@ export default function AsistenciasPage() {
     try {
       setLoading(true);
 
-      const response = await fetch(`${API_URL}/api/asistencias`, {
-        headers: getAuthHeaders(),
-      });
-
-      const text = await response.text();
-
-      if (!response.ok) {
-        throw new Error(text);
-      }
-
-      const data = JSON.parse(text);
-      setPersonal(data);
+      const { data } = await api.get<Personal[]>('/asistencias');
+      setPersonal(Array.isArray(data) ? data : []);
 
     } catch (error) {
       console.error('ERROR REAL:', error);
@@ -83,49 +59,45 @@ export default function AsistenciasPage() {
   };
 
   const toggleAsistencia = async (id: string) => {
-  try {
-    const empleado = personal.find((p) => p.id === id);
-    if (!empleado) return;
+    try {
+      const empleado = personal.find((p) => p.id === id);
+      if (!empleado) return;
 
-    const nuevoEstado = !empleado.asistencia;
+      const nuevoEstado = !empleado.asistencia;
 
-    setPersonal((prev) =>
-      prev.map((e) =>
-        e.id === id ? { ...e, asistencia: nuevoEstado } : e
-      )
-    );
+      setPersonal((prev) =>
+        prev.map((e) =>
+          e.id === id ? { ...e, asistencia: nuevoEstado } : e
+        )
+      );
 
-    const response = await fetch(`${API_URL}/api/asistencias/${id}`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({
-        presente: nuevoEstado,
-      }),
-    });
+      const { data } = await api.post<{
+        presente: boolean;
+        tardanza: boolean;
+        horaEntrada: string | null;
+      }>(
+        `/asistencias/${id}`,
+        { presente: nuevoEstado }
+      );
 
-    if (!response.ok) {
-      throw new Error('No se pudo guardar la asistencia');
-    }
-
-    const data = await response.json();
-
-    setPersonal((prev) =>
-      prev.map((e) =>
-        e.id === id
-          ? {
+      setPersonal((prev) =>
+        prev.map((e) =>
+          e.id === id
+            ? {
               ...e,
               asistencia: data.presente,
               tardanza: data.tardanza,
+              horaEntrada: data.horaEntrada,
             }
-          : e
-      )
-    );
+            : e
+        )
+      );
 
-  } catch (error) {
-    console.error(error);
-    cargarAsistencias();
-  }
-};
+    } catch (error) {
+      console.error(error);
+      cargarAsistencias();
+    }
+  };
   const personalFiltrado = useMemo(() => {
     const search = searchTerm.toLowerCase().trim();
 
@@ -461,32 +433,31 @@ export default function AsistenciasPage() {
                   <td className="px-5 py-4 text-center text-sm text-text-muted">
                     {empleado.horaEntrada
                       ? new Date(empleado.horaEntrada).toLocaleTimeString('es-PE', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
                       : '—'}
                   </td>
 
                   <td className="px-5 py-4 text-center">
                     <div className="flex flex-col items-center gap-1">
 
-                    <span
-                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                        empleado.asistencia
-                          ? 'bg-green-100 text-green-700'
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${empleado.asistencia
+                          ? empleado.tardanza
+                            ? 'bg-orange-100 text-orange-700'
+                            : 'bg-green-100 text-green-700'
                           : 'bg-red-100 text-red-600'
-                      }`}
-                          >
-                        {empleado.asistencia ? 'Presente' : 'Ausente'}
+                          }`}
+                      >
+                        {empleado.asistencia
+                          ? empleado.tardanza
+                            ? 'Tarde'
+                            : 'Puntual'
+                          : 'Ausente'}
                       </span>
-
-                      {empleado.asistencia && empleado.tardanza && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-600">
-                          Tardanza
-                        </span>
-                        )}
-                      </div>
-                    </td>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

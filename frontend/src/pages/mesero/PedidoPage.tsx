@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, ShoppingCart, Flame, Salad, Plus, Minus, X, ChevronUp, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Flame, Salad, Plus, Minus, X, ShoppingBag } from 'lucide-react';
 import { productosService } from '../../services/productos.service';
 import { pedidosService } from '../../services/pedidos.service';
 import { useAuthStore } from '../../store/authStore';
@@ -119,10 +119,9 @@ export default function PedidoPage() {
   const titulo = esEdicion
     ? `Añadir a pedido${state.mesaNumero ? ` · Mesa ${state.mesaNumero}` : ''}`
     : tipoPedido === 'PARA_LLEVAR'
-    ? 'Nuevo pedido · Para llevar'
-    : `Nuevo pedido${state.mesaNumero ? ` · Mesa ${state.mesaNumero}` : ''}`;
+      ? 'Nuevo pedido · Para llevar'
+      : `Nuevo pedido${state.mesaNumero ? ` · Mesa ${state.mesaNumero}` : ''}`;
 
-  // Panel de orden (compartido entre mobile y desktop)
   const OrdenPanel = () => (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-3">
@@ -174,7 +173,6 @@ export default function PedidoPage() {
         </div>
       )}
 
-      {/* Total y confirmar */}
       <div className="border-t border-border pt-3 mt-3 space-y-3">
         <div className="flex items-center justify-between font-semibold text-text">
           <span>Total</span>
@@ -208,11 +206,8 @@ export default function PedidoPage() {
         )}
       </div>
 
-      {/* Contenido principal */}
       {isMobile ? (
-        // ── Layout MÓVIL ──────────────────────────────────────────────
         <div className="flex flex-col flex-1 min-h-0">
-          {/* Categorías */}
           <div className="flex gap-2 overflow-x-auto pb-2 mb-3 scrollbar-hide">
             <button
               onClick={() => setCategoriaSeleccionada('todos')}
@@ -233,7 +228,6 @@ export default function PedidoPage() {
             ))}
           </div>
 
-          {/* Grid productos */}
           <div className="flex-1 overflow-y-auto">
             {isLoading ? (
               <div className="grid grid-cols-2 gap-2">
@@ -248,7 +242,6 @@ export default function PedidoPage() {
             )}
           </div>
 
-          {/* Barra inferior flotante */}
           <div className="fixed bottom-0 left-0 right-0 z-40 p-3 bg-white border-t border-border shadow-lg">
             {totalItems > 0 ? (
               <div className="flex items-center gap-3">
@@ -271,7 +264,6 @@ export default function PedidoPage() {
             )}
           </div>
 
-          {/* Panel de orden (bottom sheet móvil) */}
           {mostrarOrden && (
             <div className="fixed inset-0 z-50 flex flex-col justify-end">
               <div className="absolute inset-0 bg-black/40" onClick={() => setMostrarOrden(false)} />
@@ -290,11 +282,8 @@ export default function PedidoPage() {
           )}
         </div>
       ) : (
-        // ── Layout DESKTOP ────────────────────────────────────────────
         <div className="flex gap-4 flex-1 min-h-0">
-          {/* Panel izquierdo: productos */}
           <div className="flex-1 flex flex-col min-h-0">
-            {/* Categorías */}
             <div className="flex gap-2 flex-wrap mb-3">
               <button
                 onClick={() => setCategoriaSeleccionada('todos')}
@@ -335,7 +324,6 @@ export default function PedidoPage() {
             </div>
           </div>
 
-          {/* Panel derecho: orden */}
           <div className="w-72 flex-shrink-0 bg-white rounded-2xl border border-border p-4 flex flex-col">
             <OrdenPanel />
           </div>
@@ -345,13 +333,11 @@ export default function PedidoPage() {
   );
 }
 
-// ── Tarjeta de producto ──────────────────────────────────────────────────────
 function ProductoCard({ producto, onAgregar }: { producto: Producto; onAgregar: (p: Producto) => void }) {
   const esCocina = producto.tipo === 'COCINA';
 
   return (
     <div className="bg-white rounded-xl border border-border overflow-hidden flex flex-col">
-      {/* Imagen placeholder */}
       <div className="bg-gray-100 h-20 flex items-center justify-center flex-shrink-0 relative">
         {producto.imagen ? (
           <img src={producto.imagen} alt={producto.nombre} className="w-full h-full object-cover" />
