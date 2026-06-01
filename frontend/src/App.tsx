@@ -1,6 +1,17 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from 'react-router-dom';
+
+import {
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query';
+
 import { Toaster } from 'react-hot-toast';
 
 import { AuthLayout } from './components/layout/AuthLayout';
@@ -13,6 +24,7 @@ import UsuariosPage from './pages/usuarios/UsuariosPage';
 import ConfiguracionPage from './pages/configuracion/ConfiguracionPage';
 
 import PedidosCocinaPage from './pages/pedidos-cocina/PedidosCocinaPage';
+
 import MesasPageMesero from './pages/mesero/MesasPage';
 import PedidoPage from './pages/mesero/PedidoPage';
 import PedidosActivosPage from './pages/mesero/PedidosActivosPage';
@@ -30,14 +42,21 @@ const qc = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
-      staleTime: 30_000,
+      staleTime: 30000,
       refetchOnWindowFocus: false,
     },
   },
 });
 
-function RequireAuth({ user }: { user: AuthUser | null }) {
-  if (!user) return <Navigate to="/login" replace />;
+function RequireAuth({
+  user,
+}: {
+  user: AuthUser | null;
+}) {
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
   return <Outlet />;
 }
 
@@ -53,11 +72,18 @@ function RequireRole({
   if (!user || !roles.includes(user.rol)) {
     return <Navigate to="/" replace />;
   }
+
   return <>{children}</>;
 }
 
-function HomeRedirect({ user }: { user: AuthUser | null }) {
-  if (!user) return <Navigate to="/login" replace />;
+function HomeRedirect({
+  user,
+}: {
+  user: AuthUser | null;
+}) {
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
   if (user.rol === 'COCINERO') {
     return <Navigate to="/pedidos-cocina" replace />;
@@ -71,35 +97,57 @@ function HomeRedirect({ user }: { user: AuthUser | null }) {
 }
 
 function AppRoutes() {
-  const { user, initAuth, listenToAuthEvents } = useAuthStore();
-  const [authReady, setAuthReady] = useState(false);
+  const {
+    user,
+    initAuth,
+    listenToAuthEvents,
+  } = useAuthStore();
+
+  const [authReady, setAuthReady] =
+    useState(false);
 
   useEffect(() => {
-    initAuth().finally(() => setAuthReady(true));
+    initAuth().finally(() =>
+      setAuthReady(true)
+    );
   }, [initAuth]);
 
   useEffect(() => {
-    const unsubscribe = listenToAuthEvents();
+    const unsubscribe =
+      listenToAuthEvents();
+
     return unsubscribe;
   }, [listenToAuthEvents]);
 
-  if (!authReady) return null;
+  if (!authReady) {
+    return null;
+  }
 
   return (
     <Routes>
-
-      <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/login"
+        element={<LoginPage />}
+      />
 
       <Route element={<AuthLayout />}>
-
-        <Route element={<RequireAuth user={user} />}>
-
-          <Route index element={<HomeRedirect user={user} />} />
+        <Route
+          element={<RequireAuth user={user} />}
+        >
+          <Route
+            index
+            element={
+              <HomeRedirect user={user} />
+            }
+          />
 
           <Route
             path="/dashboard"
             element={
-              <RequireRole user={user} roles={['DUENO', 'ADMIN']}>
+              <RequireRole
+                user={user}
+                roles={['DUENO', 'ADMIN']}
+              >
                 <DashboardPage />
               </RequireRole>
             }
@@ -108,7 +156,10 @@ function AppRoutes() {
           <Route
             path="/sucursales"
             element={
-              <RequireRole user={user} roles={['DUENO', 'ADMIN']}>
+              <RequireRole
+                user={user}
+                roles={['DUENO', 'ADMIN']}
+              >
                 <SucursalesPage />
               </RequireRole>
             }
@@ -117,7 +168,10 @@ function AppRoutes() {
           <Route
             path="/sucursales/:id"
             element={
-              <RequireRole user={user} roles={['DUENO', 'ADMIN']}>
+              <RequireRole
+                user={user}
+                roles={['DUENO', 'ADMIN']}
+              >
                 <SucursalDetallePage />
               </RequireRole>
             }
@@ -126,7 +180,10 @@ function AppRoutes() {
           <Route
             path="/usuarios"
             element={
-              <RequireRole user={user} roles={['DUENO', 'ADMIN']}>
+              <RequireRole
+                user={user}
+                roles={['DUENO', 'ADMIN']}
+              >
                 <UsuariosPage />
               </RequireRole>
             }
@@ -135,7 +192,10 @@ function AppRoutes() {
           <Route
             path="/mesero/mesas"
             element={
-              <RequireRole user={user} roles={['MESERO']}>
+              <RequireRole
+                user={user}
+                roles={['MESERO']}
+              >
                 <MesasPageMesero />
               </RequireRole>
             }
@@ -144,7 +204,10 @@ function AppRoutes() {
           <Route
             path="/mesero/pedido"
             element={
-              <RequireRole user={user} roles={['MESERO']}>
+              <RequireRole
+                user={user}
+                roles={['MESERO']}
+              >
                 <PedidoPage />
               </RequireRole>
             }
@@ -153,7 +216,10 @@ function AppRoutes() {
           <Route
             path="/mesero/pedidos"
             element={
-              <RequireRole user={user} roles={['MESERO']}>
+              <RequireRole
+                user={user}
+                roles={['MESERO']}
+              >
                 <PedidosActivosPage />
               </RequireRole>
             }
@@ -162,7 +228,10 @@ function AppRoutes() {
           <Route
             path="/pedidos-cocina"
             element={
-              <RequireRole user={user} roles={['COCINERO']}>
+              <RequireRole
+                user={user}
+                roles={['COCINERO']}
+              >
                 <PedidosCocinaPage />
               </RequireRole>
             }
@@ -171,7 +240,15 @@ function AppRoutes() {
           <Route
             path="/configuracion"
             element={
-              <RequireRole user={user} roles={['DUENO', 'ADMIN', 'MESERO', 'COCINERO']}>
+              <RequireRole
+                user={user}
+                roles={[
+                  'DUENO',
+                  'ADMIN',
+                  'MESERO',
+                  'COCINERO',
+                ]}
+              >
                 <ConfiguracionPage />
               </RequireRole>
             }
@@ -180,18 +257,22 @@ function AppRoutes() {
           <Route
             path="/asistencias"
             element={
-              <RequireRole user={user} roles={['DUENO', 'ADMIN']}>
+              <RequireRole
+                user={user}
+                roles={['ADMIN']}
+              >
                 <AsistenciasPage />
               </RequireRole>
             }
           />
 
-          <Route path="*" element={<HomeRedirect user={user} />} />
-
           <Route
             path="/menu"
             element={
-              <RequireRole user={user} roles={['DUENO', 'ADMIN']}>
+              <RequireRole
+                user={user}
+                roles={['ADMIN']}
+              >
                 <MenuPage />
               </RequireRole>
             }
@@ -200,7 +281,10 @@ function AppRoutes() {
           <Route
             path="/reportes"
             element={
-              <RequireRole user={user} roles={['DUENO', 'ADMIN']}>
+              <RequireRole
+                user={user}
+                roles={['DUENO', 'ADMIN']}
+              >
                 <ReportesPage />
               </RequireRole>
             }
@@ -209,7 +293,10 @@ function AppRoutes() {
           <Route
             path="/mesas"
             element={
-              <RequireRole user={user} roles={['DUENO', 'ADMIN']}>
+              <RequireRole
+                user={user}
+                roles={['ADMIN']}
+              >
                 <MesasPage />
               </RequireRole>
             }
@@ -218,17 +305,33 @@ function AppRoutes() {
           <Route
             path="/pedidos"
             element={
-              <RequireRole user={user} roles={['DUENO', 'ADMIN']}>
+              <RequireRole
+                user={user}
+                roles={['ADMIN']}
+              >
                 <PedidosPage />
               </RequireRole>
             }
           />
-        </Route>
 
+          <Route
+            path="*"
+            element={
+              <HomeRedirect user={user} />
+            }
+          />
+        </Route>
       </Route>
 
-      <Route path="*" element={<Navigate to="/login" replace />} />
-
+      <Route
+        path="*"
+        element={
+          <Navigate
+            to="/login"
+            replace
+          />
+        }
+      />
     </Routes>
   );
 }
