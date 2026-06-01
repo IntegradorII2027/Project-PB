@@ -465,7 +465,7 @@ export default function UsuariosPage() {
                   <button
                     type="button"
                     onClick={() => setIsModalEditing(true)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-green-700 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-700 focus:ring-offset-2 transition-colors"
                   >
                     <Pencil size={14} />
                     Editar
@@ -475,8 +475,9 @@ export default function UsuariosPage() {
 
               <form onSubmit={handleSubmit} className="space-y-3">
                 <div>
-                  <label className="text-sm font-medium text-text block mb-1">Nombre *</label>
+                  <label htmlFor="usuario-nombre" className="text-sm font-medium text-text block mb-1">Nombre *</label>
                   <input
+                    id="usuario-nombre"
                     value={form.nombre}
                     onChange={e => handleChange('nombre', e.target.value)}
                     placeholder="Juan Pérez"
@@ -488,8 +489,9 @@ export default function UsuariosPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-text block mb-1">Email *</label>
+                  <label htmlFor="usuario-email" className="text-sm font-medium text-text block mb-1">Email *</label>
                   <input
+                    id="usuario-email"
                     type="email"
                     value={form.email}
                     onChange={e => handleChange('email', e.target.value)}
@@ -503,12 +505,13 @@ export default function UsuariosPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-text block mb-1">
+                  <label htmlFor="usuario-password" className="text-sm font-medium text-text block mb-1">
                     {editing ? (
                       <span className="flex items-center gap-1.5"><KeyRound size={13} /> Nueva contraseña (dejar vacío para no cambiar)</span>
                     ) : 'Contraseña *'}
                   </label>
                   <input
+                    id="usuario-password"
                     type="password"
                     value={form.password}
                     onChange={e => handleChange('password', e.target.value)}
@@ -521,9 +524,10 @@ export default function UsuariosPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-text block mb-1">Rol *</label>
+                  <label htmlFor="usuario-rol" className="text-sm font-medium text-text block mb-1">Rol *</label>
 
                   <select
+                    id="usuario-rol"
                     value={form.rol}
                     onChange={e => handleChange('rol', e.target.value)}
                     disabled={isReadOnly}
@@ -543,11 +547,12 @@ export default function UsuariosPage() {
 
                 {canViewSucursal && (
                   <div>
-                    <label className="text-sm font-medium text-text block mb-1">
+                    <label htmlFor="usuario-sucursal" className="text-sm font-medium text-text block mb-1">
                       Sucursal
                     </label>
 
                     <input
+                      id="usuario-sucursal"
                       value={
                         editing?.sucursal?.nombre ||
                         sucursales.find(s => s.id === form.sucursalId)?.nombre ||
@@ -561,8 +566,9 @@ export default function UsuariosPage() {
 
                 {editing && (
                   <div>
-                    <label className="text-sm font-medium text-text block mb-1">Fecha de creación</label>
+                    <label htmlFor="usuario-creado-en" className="text-sm font-medium text-text block mb-1">Fecha de creación</label>
                     <input
+                      id="usuario-creado-en"
                       value={formatDate(editing.creadoEn)}
                       disabled
                       className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-gray-100 text-text-muted cursor-not-allowed"
@@ -570,10 +576,10 @@ export default function UsuariosPage() {
                   </div>
                 )}
 
-                <div className="border-t border-border pt-4 mt-4">
-                  <label className="text-sm font-medium text-text block mb-2">
+                <fieldset className="border-t border-border pt-4 mt-4">
+                  <legend className="text-sm font-medium text-text block mb-2">
                     Estado del usuario
-                  </label>
+                  </legend>
 
                   <div className="flex items-center justify-between gap-4 rounded-xl border border-border px-4 py-3 bg-background/40">
                     <div>
@@ -599,7 +605,7 @@ export default function UsuariosPage() {
                       {form.activo ? 'Activo' : 'Inactivo'}
                     </button>
                   </div>
-                </div>
+                </fieldset>
 
                 <div className="flex gap-3 pt-2">
                   <Button type="button" variant="secondary" className="flex-1" onClick={closeModal}>

@@ -346,8 +346,9 @@ export default function SucursalesPage() {
               <h3 className="font-semibold text-text text-lg mb-5">{editing ? 'Editar sucursal' : 'Nueva sucursal'}</h3>
               <form onSubmit={handleSubmit} className="space-y-3">
                 <div>
-                  <label className="text-sm font-medium text-text block mb-1">Nombre *</label>
+                  <label htmlFor="sucursal-nombre" className="text-sm font-medium text-text block mb-1">Nombre *</label>
                   <input
+                    id="sucursal-nombre"
                     value={form.nombre}
                     onChange={(e) => handleChange('nombre', e.target.value)}
                     placeholder="Ej: Local Centro"
@@ -357,8 +358,9 @@ export default function SucursalesPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-text block mb-1">Dirección</label>
+                  <label htmlFor="sucursal-direccion" className="text-sm font-medium text-text block mb-1">Dirección</label>
                   <input
+                    id="sucursal-direccion"
                     value={form.direccion}
                     onChange={(e) => handleChange('direccion', e.target.value)}
                     placeholder="Av. Principal 123"
@@ -368,8 +370,9 @@ export default function SucursalesPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-text block mb-1">Teléfono</label>
+                  <label htmlFor="sucursal-telefono" className="text-sm font-medium text-text block mb-1">Teléfono</label>
                   <input
+                    id="sucursal-telefono"
                     value={form.telefono}
                     onChange={(e) => {
                       const onlyNumbers = e.target.value.replace(/\D/g, '').slice(0, 9);
@@ -386,10 +389,10 @@ export default function SucursalesPage() {
                   </p>
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium text-text block mb-2">
+                <fieldset>
+                  <legend className="text-sm font-medium text-text block mb-2">
                     Días de operación *
-                  </label>
+                  </legend>
 
                   <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
                     {DIAS_OPERACION.map((dia) => {
@@ -402,7 +405,7 @@ export default function SucursalesPage() {
                           onClick={() => toggleDiaOperacion(dia.value)}
                           className={`rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
                             selected
-                              ? 'border-primary bg-primary text-white'
+                              ? 'border-green-700 bg-green-700 text-white'
                               : 'border-border bg-white text-text-muted hover:bg-gray-50'
                           }`}
                         >
@@ -411,17 +414,19 @@ export default function SucursalesPage() {
                       );
                     })}
                   </div>
+                
 
                   <p className="text-xs text-text-muted mt-2">
                     Selecciona los días en que la sucursal atenderá.
                   </p>
-                </div>
+                </fieldset>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-sm font-medium text-text block mb-1">Apertura</label>
+                      <label htmlFor="sucursal-apertura" className="text-sm font-medium text-text block mb-1">Apertura</label>
                       <input
                         type="time"
+                        id="sucursal-apertura"
                         value={form.horarioApertura}
                         onChange={(e) => handleChange('horarioApertura', e.target.value)}
                         className="w-full border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary"
@@ -429,8 +434,9 @@ export default function SucursalesPage() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium text-text block mb-1">Cierre</label>
+                      <label htmlFor="sucursal-cierre" className="text-sm font-medium text-text block mb-1">Cierre</label>
                       <input
+                        id="sucursal-cierre"
                         type="time"
                         value={form.horarioCierre}
                         onChange={(e) => handleChange('horarioCierre', e.target.value)}
