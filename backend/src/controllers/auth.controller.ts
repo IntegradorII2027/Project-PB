@@ -3,18 +3,22 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { logger } from '../utils/logger';
+import rateLimit from 'express-rate-limit';
 
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET as string;
 if (!JWT_SECRET) throw new Error('JWT_SECRET no configurado');
 
-const JWT_EXPIRES = '8h';
+const JWT_EXPIRES = '15m';
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
+  sameSite:
+    process.env.NODE_ENV === 'production'
+      ? ('none' as const)
+      : ('lax' as const),
   path: '/',
-  maxAge: 8 * 60 * 60 * 1000,
+  maxAge: 15 * 60 * 1000,
 };
 
 const getFechaSolo = () => {
@@ -29,6 +33,16 @@ const getFechaRange = () => {
   end.setDate(end.getDate() + 1);
   return { start, end };
 };
+
+export const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Demasiados intentos. Intente más tarde',
+  },
+});
 
 export async function login(req: Request, res: Response): Promise<void> {
   const { email, password } = req.body;
