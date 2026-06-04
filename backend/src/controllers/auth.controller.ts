@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET as string;
 if (!JWT_SECRET) throw new Error('JWT_SECRET no configurado');
 
-const JWT_EXPIRES = '15m';
+const JWT_EXPIRES = '8h';
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
@@ -18,7 +18,7 @@ const COOKIE_OPTIONS = {
       ? ('none' as const)
       : ('lax' as const),
   path: '/',
-  maxAge: 15 * 60 * 1000,
+  maxAge: 8 * 60 * 60 * 1000,
 };
 
 const getFechaSolo = () => {
