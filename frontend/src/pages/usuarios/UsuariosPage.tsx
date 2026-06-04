@@ -84,10 +84,14 @@ export default function UsuariosPage() {
     queryFn: () => usuariosService.getAll(),
   });
 
+  const usuariosVisibles = useMemo(() => {
+    return usuarios.filter((usuario) => usuario.rol !== 'DUENO');
+  }, [usuarios]);
+
   const usuariosFiltrados = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
 
-    return usuarios.filter((usuario) => {
+    return usuariosVisibles.filter((usuario) => {
       const matchesSearch =
         !search ||
         usuario.nombre.toLowerCase().includes(search) ||
@@ -104,12 +108,12 @@ export default function UsuariosPage() {
 
       return matchesSearch && matchesRol && matchesEstado;
     });
-  }, [usuarios, searchTerm, rolFilter, estadoFilter]);
+  }, [usuariosVisibles, searchTerm, rolFilter, estadoFilter]);
 
   const { data: sucursales = [] } = useQuery({
     queryKey: ['sucursales'],
     queryFn: sucursalesService.getAll,
-    enabled: canViewSucursal,
+    enabled: isDueno,
   });
 
   const sucursalesDisponibles = useMemo(() => {
@@ -182,7 +186,7 @@ export default function UsuariosPage() {
     setIsModalEditing(true);
     setForm({
       ...emptyForm,
-      sucursalId: user?.sucursalId ?? '',
+      sucursalId: isDueno ? '' : user?.sucursalId ?? '',
     });
     setShowModal(true);
   };
@@ -259,7 +263,9 @@ export default function UsuariosPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-text">Usuarios</h2>
-          <p className="text-sm text-text-muted">{usuarios.length} usuario{usuarios.length !== 1 ? 's' : ''} registrado{usuarios.length !== 1 ? 's' : ''}</p>
+          <p className="text-sm text-text-muted">
+            {usuariosVisibles.length} usuario{usuariosVisibles.length !== 1 ? 's' : ''} registrado{usuariosVisibles.length !== 1 ? 's' : ''}
+          </p>
         </div>
         <Button onClick={openNew}><Plus size={16} /> Nuevo usuario</Button>
       </div>
@@ -269,7 +275,7 @@ export default function UsuariosPage() {
         <div className="space-y-2">
           {[1, 2, 3].map(i => <div key={i} className="bg-white rounded-xl border border-border p-4 animate-pulse h-16" />)}
         </div>
-      ) : usuarios.length === 0 ? (
+      ) : usuariosVisibles.length === 0 ? (
         <div className="text-center py-16 text-text-muted">
           <UserCircle size={40} className="mx-auto mb-3 opacity-20" />
           <p className="font-medium">No hay usuarios aún</p>
@@ -338,7 +344,7 @@ export default function UsuariosPage() {
             <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
               <p className="text-sm text-text-muted">
                 Mostrando <span className="font-semibold text-text">{usuariosFiltrados.length}</span> de{' '}
-                <span className="font-semibold text-text">{usuarios.length}</span> usuarios
+                <span className="font-semibold text-text">{usuariosVisibles.length}</span> usuarios
               </p>
 
               {(searchTerm || rolFilter !== 'TODOS' || estadoFilter !== 'TODOS') && (
@@ -548,19 +554,38 @@ export default function UsuariosPage() {
                 {canViewSucursal && (
                   <div>
                     <label htmlFor="usuario-sucursal" className="text-sm font-medium text-text block mb-1">
-                      Sucursal
+                      Sucursal *
                     </label>
 
-                    <input
-                      id="usuario-sucursal"
-                      value={
-                        editing?.sucursal?.nombre ||
-                        sucursales.find(s => s.id === form.sucursalId)?.nombre ||
-                        'Sin sucursal'
-                      }
-                      disabled
-                      className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-gray-100 text-text-muted cursor-not-allowed"
-                    />
+                    {canEditSucursal && !isReadOnly ? (
+                      <select
+                        id="usuario-sucursal"
+                        value={form.sucursalId}
+                        onChange={(e) => handleChange('sucursalId', e.target.value)}
+                        required
+                        className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-white text-text focus:outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        <option value="">Selecciona una sucursal</option>
+
+                        {sucursalesDisponibles.map((sucursal) => (
+                          <option key={sucursal.id} value={sucursal.id}>
+                            {sucursal.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        id="usuario-sucursal"
+                        value={
+                          editing?.sucursal?.nombre ||
+                          sucursales.find((s) => s.id === form.sucursalId)?.nombre ||
+                          user?.sucursal?.nombre ||
+                          'Sin sucursal'
+                        }
+                        disabled
+                        className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-gray-100 text-text-muted cursor-not-allowed"
+                      />
+                    )}
                   </div>
                 )}
 
