@@ -32,7 +32,20 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     try {
-      await api.post('/auth/logout');
+      const csrf = document.cookie
+        .split('; ')
+        .find(r => r.startsWith('csrf-token='))
+        ?.split('=')[1];
+
+      await api.post(
+        '/auth/logout',
+        {},
+        {
+          headers: {
+            'CSRF-Token': csrf!,
+          },
+        }
+      );
     } finally {
       set({ user: null });
       localStorage.setItem('AUTH_LOGOUT_EVENT', Date.now().toString());

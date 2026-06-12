@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware, roleMiddleware } from '../middleware/auth.middleware';
-import { login, me, logout } from '../controllers/auth.controller';
+import { login, me, logout, loginLimiter } from '../controllers/auth.controller';
 import { getSucursales, getSucursalById, createSucursal, updateSucursal, toggleSucursal, deleteSucursal } from '../controllers/sucursales.controller';
 import { getUsuarios, createUsuario, updateUsuario, deleteUsuario, updateMe, changeMyPassword } from '../controllers/usuarios.controller';
 import { getDashboardDueno, getDashboardSucursal } from '../controllers/dashboard.controller';
@@ -14,7 +14,7 @@ import { marcarPedidoListo, obtenerPedidosCocina } from '../controllers/pedidos-
 
 const router = Router();
 // Auth
-router.post('/auth/login', login);
+router.post('/auth/login', login, loginLimiter);
 router.get('/auth/me', authMiddleware, me);
 router.post('/auth/logout', authMiddleware, logout);
 
