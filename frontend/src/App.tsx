@@ -107,10 +107,8 @@ function AppRoutes() {
     useState(false);
 
   useEffect(() => {
-    initAuth().finally(() =>
-      setAuthReady(true)
-    );
-  }, [initAuth]);
+    initAuth().finally(() => setAuthReady(true));
+  }, []);
 
   useEffect(() => {
     const unsubscribe =

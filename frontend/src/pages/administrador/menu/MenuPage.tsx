@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { Download } from 'lucide-react';
 import {
   Plus,
   Search,
@@ -19,6 +22,7 @@ interface Categoria {
 interface Producto {
   id: string;
   nombre: string;
+  disponible: boolean;
   descripcion: string;
   precio: number;
   categoria: {
@@ -141,6 +145,25 @@ export default function MenuPage() {
     cargarProductos();
   };
 
+  const cambiarEstadoProducto = async (id: string) => {
+    try {
+      await api.patch(`/productos/${id}/toggle`);
+
+      setProductos((prev) =>
+        prev.map((p) =>
+          p.id === id
+            ? {
+              ...p,
+              disponible: !p.disponible,
+            }
+            : p
+        )
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const productosFiltrados = Array.isArray(productos)
     ? productos.filter((p) => {
       const okBusqueda =
@@ -174,6 +197,68 @@ export default function MenuPage() {
     });
   };
 
+  const exportarMenuPDF = () => {
+    const pdf = new jsPDF();
+    pdf.setFontSize(24);
+    pdf.setTextColor(40, 40, 40);
+    pdf.text('MENÚ DEL RESTAURANTE', 105, 20, { align: 'center' });
+
+    pdf.setFontSize(11);
+    pdf.setTextColor(120, 120, 120);
+    pdf.text(
+      `Generado el ${new Date().toLocaleDateString()}`,
+      105,
+      28,
+      { align: 'center' }
+    );
+
+    let y = 40;
+
+    categorias.forEach((categoria) => {
+      const productosCategoria = productos.filter(
+        (p) => p.categoria.nombre === categoria.nombre
+      );
+
+      if (productosCategoria.length === 0) return;
+
+      pdf.setFillColor(249, 115, 22);
+      pdf.roundedRect(14, y - 5, 182, 10, 2, 2, 'F');
+
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(14);
+      pdf.text(categoria.nombre.toUpperCase(), 18, y + 1);
+
+      y += 10;
+
+      autoTable(pdf, {
+        startY: y,
+        theme: 'plain',
+        head: [['Producto', 'Descripción', 'Precio']],
+        body: productosCategoria.map((p) => [
+          p.nombre,
+          p.descripcion || '-',
+          `S/ ${Number(p.precio).toFixed(2)}`
+        ]),
+        styles: {
+          fontSize: 10,
+          cellPadding: 3,
+        },
+        headStyles: {
+          fillColor: [249, 115, 22],
+        },
+        columnStyles: {
+          2: {
+            halign: 'right',
+            fontStyle: 'bold',
+          },
+        },
+      });
+
+      y = (pdf as any).lastAutoTable.finalY + 15;
+    });
+    pdf.save('menu-restaurante.pdf');
+  };
+
   return (
     <div className="p-6 bg-background min-h-screen">
 
@@ -188,17 +273,20 @@ export default function MenuPage() {
 
         <div className="flex flex-wrap gap-3">
           <button
+            onClick={exportarMenuPDF}
+            className="flex items-center gap-2 border border-green-600 text-green-600 px-4 py-2 rounded-xl font-medium hover:bg-green-50">
+            <Download size={18} />
+            Exportar menú
+          </button>
+          <button
             onClick={() => setModalCategoria(true)}
-            className="flex items-center gap-2 border border-primary text-primary px-4 py-2 rounded-xl font-medium hover:bg-primary/5"
-          >
+            className="flex items-center gap-2 border border-primary text-primary px-4 py-2 rounded-xl font-medium hover:bg-primary/5">
             <Plus size={18} />
             Nueva categoría
           </button>
-
           <button
             onClick={() => setModalProducto(true)}
-            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-medium hover:bg-primary/90"
-          >
+            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-medium hover:bg-primary/90">
             <Plus size={18} />
             Nuevo producto
           </button>
@@ -270,9 +358,47 @@ export default function MenuPage() {
                 {producto.categoria.nombre}
               </span>
 
-              <h2 className="text-lg font-bold text-text mb-2">
-                {producto.nombre}
-              </h2>
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h2 className="text-lg font-bold text-text">
+                    {producto.nombre}
+                  </h2>
+
+                  <span
+                    className={`text-xs font-medium ${producto.disponible
+                      ? 'text-green-600'
+                      : 'text-red-500'
+                      }`}
+                  >
+                    {producto.disponible
+                      ? 'Activo'
+                      : 'Desactivado'}
+                  </span>
+                </div>
+
+                <button
+                  onClick={() =>
+                    cambiarEstadoProducto(producto.id)
+                  }
+                  className={`
+                    relative w-12 h-7 rounded-full transition
+                    ${producto.disponible
+                      ? 'bg-green-500'
+                      : 'bg-gray-300'
+                    }`}
+                >
+                  <span
+                    className={`
+                      absolute top-1 left-1
+                      w-5 h-5 bg-white rounded-full
+                      transition-transform
+                      ${producto.disponible
+                        ? 'translate-x-5'
+                        : ''
+                      }`}
+                  />
+                </button>
+              </div>
 
               <p className="text-sm text-text-muted mb-4 line-clamp-2">
                 {producto.descripcion}
