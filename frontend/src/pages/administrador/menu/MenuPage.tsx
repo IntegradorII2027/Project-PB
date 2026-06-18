@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Download } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import {
   Plus,
   Search,
@@ -87,16 +88,44 @@ export default function MenuPage() {
   }, []);
 
   const crearCategoria = async () => {
-    if (!nuevaCategoria.trim()) return;
+    try {
+      if (!nuevaCategoria.trim()) {
+        toast.error('Ingresa un nombre de categoría');
+        return;
+      }
 
-    await api.post('/categorias', {
-      nombre: nuevaCategoria,
-      sucursalId: 'sucursal-1',
-    });
+      await api.post('/categorias', {
+        nombre: nuevaCategoria,
+        sucursalId: 'sucursal-1',
+      });
 
-    setNuevaCategoria('');
-    setModalCategoria(false);
-    cargarCategorias();
+      toast.success('Categoría creada correctamente');
+
+      setNuevaCategoria('');
+      setModalCategoria(false);
+      cargarCategorias();
+    } catch (error) {
+      toast.error('Error al crear la categoría');
+    }
+  };
+
+  const eliminarCategoria = async (id: string) => {
+    try {
+      console.log('Eliminando categoria:', id);
+      console.log('URL:', `/categorias/${id}`);
+
+      await api.delete(`/categorias/${id}`);
+
+      toast.success('Categoría eliminada correctamente');
+
+      cargarCategorias();
+    } catch (error: any) {
+      console.log(error.response?.status);
+      console.log(error.response?.data);
+      console.error(error);
+
+      toast.error('No se pudo eliminar la categoría');
+    }
   };
 
   const crearProducto = async () => {
@@ -146,7 +175,7 @@ export default function MenuPage() {
       setModalProducto(false);
       cargarProductos();
     } catch (error) {
-      setErroresProducto(['Error al crear el producto']);
+      toast.error('Error al crear el producto');
       console.error(error);
     }
   };
@@ -184,14 +213,21 @@ export default function MenuPage() {
       setProductoEditando(null);
       cargarProductos();
     } catch (error) {
-      setErroresEdicion(['Error al actualizar el producto']);
+      toast.error('Error al actualizar el producto');
       console.error(error);
     }
   };
 
   const eliminarProducto = async (id: string) => {
-    await api.delete(`/productos/${id}`);
-    cargarProductos();
+    try {
+      await api.delete(`/productos/${id}`);
+
+      toast.success('Producto eliminado correctamente');
+
+      cargarProductos();
+    } catch (error) {
+      toast.error('No se pudo eliminar el producto');
+    }
   };
 
   const cambiarEstadoProducto = async (id: string) => {
@@ -500,12 +536,37 @@ export default function MenuPage() {
             <input
               type="text"
               placeholder="Nombre de la categoría"
+              maxLength={20}
               value={nuevaCategoria}
               onChange={(e) =>
-                setNuevaCategoria(e.target.value)
+                setNuevaCategoria(
+                  e.target.value
+                    .toLowerCase()
+                    .replace(/[^a-záéíóúñ\s]/g, '')
+                )
               }
-              className="w-full border border-border rounded-xl px-4 py-3 mb-6 outline-none"
+              className="w-full border border-border rounded-xl px-4 py-3 mb-4 outline-none"
             />
+
+            <div className="max-h-48 overflow-y-auto space-y-2 mb-6">
+              {categorias.map((categoria) => (
+                <div
+                  key={categoria.id}
+                  className="flex items-center justify-between border rounded-xl p-3"
+                >
+                  <span className="font-medium">
+                    {categoria.nombre}
+                  </span>
+
+                  <button
+                    onClick={() => eliminarCategoria(categoria.id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ))}
+            </div>
 
             <div className="flex justify-end gap-3">
               <button
@@ -617,12 +678,15 @@ export default function MenuPage() {
                 </label>
 
                 <input
-                  type="number"
-                  min="0.01"
-                  step="0.01"
+                  type="text"
+                  maxLength={5}
                   value={nuevoProducto.precio}
                   onChange={(e) => {
-                    const valor = e.target.value;
+                    const valor = e.target.value.replace(
+                      /[^0-9.]/g,
+                      ''
+                    );
+
                     setNuevoProducto({
                       ...nuevoProducto,
                       precio: valor,
@@ -700,18 +764,24 @@ export default function MenuPage() {
                 <label className="text-sm font-medium mb-2 block">
                   Descripción breve
                 </label>
-
                 <textarea
                   rows={4}
+                  maxLength={100}
                   value={nuevoProducto.descripcion || ''}
                   onChange={(e) =>
                     setNuevoProducto({
                       ...nuevoProducto,
-                      descripcion: e.target.value,
+                      descripcion: e.target.value.replace(
+                        /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g,
+                        ''
+                      ),
                     })
                   }
                   className="w-full border border-border rounded-xl px-4 py-3 outline-none resize-none"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  {(nuevoProducto.descripcion || '').length}/100
+                </p>
               </div>
             </div>
 
