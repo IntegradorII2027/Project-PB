@@ -7,6 +7,7 @@
     "start": "node dist/server.js",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed-historico": "tsx prisma/seed-historico.ts",
     "db:generate": "prisma generate",
     "db:studio": "prisma studio"
   },
