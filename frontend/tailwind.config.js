@@ -5,7 +5,7 @@ export default {
     extend: {
       colors: {
         // Paleta principal — blanco + verde (accesible, alto contraste)
-        primary:   { DEFAULT: '#16a34a', light: '#22c55e', dark: '#15803d' },
+        primary:   { DEFAULT: '#15803d', light: '#16a34a', dark: '#166534' },
         surface:   '#ffffff',
         background:'#f9fafb',
         border:    '#e5e7eb',

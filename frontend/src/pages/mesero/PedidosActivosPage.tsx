@@ -138,8 +138,8 @@ export default function PedidosActivosPage() {
                 <div className="space-y-2">
                   {esCocina.length > 0 && (
                     <div>
-                      <p className="flex items-center gap-1 text-[11px] font-bold text-orange-600 mb-1">
-                        <Flame size={11} /> Cocina
+                      <p className="flex items-center gap-1 text-[11px] font-bold text-orange-700 mb-1">
+                        <Flame size={11} aria-hidden="true" /> Cocina
                       </p>
                       <div className="space-y-0.5">
                         {esCocina.map((item) => (
@@ -153,8 +153,8 @@ export default function PedidosActivosPage() {
                   )}
                   {esComplemento.length > 0 && (
                     <div>
-                      <p className="flex items-center gap-1 text-[11px] font-bold text-green-600 mb-1">
-                        <Salad size={11} /> Complementos
+                      <p className="flex items-center gap-1 text-[11px] font-bold text-green-700 mb-1">
+                        <Salad size={11} aria-hidden="true" /> Complementos
                       </p>
                       <div className="space-y-0.5">
                         {esComplemento.map((item) => (
