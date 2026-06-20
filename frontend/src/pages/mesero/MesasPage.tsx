@@ -59,9 +59,9 @@ export default function MesasPageMesero() {
             Gestión de mesas
           </h2>
           <p className="text-sm text-text-muted mt-0.5">
-            <span className="text-green-600 font-medium">{libres} libre{libres !== 1 ? 's' : ''}</span>
+            <span className="text-green-700 font-medium">{libres} libre{libres !== 1 ? 's' : ''}</span>
             {' · '}
-            <span className="text-orange-600 font-medium">{ocupadas} ocupada{ocupadas !== 1 ? 's' : ''}</span>
+            <span className="text-orange-800 font-medium">{ocupadas} ocupada{ocupadas !== 1 ? 's' : ''}</span>
           </p>
         </div>
         <div className="flex gap-2">

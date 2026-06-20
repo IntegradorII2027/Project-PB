@@ -115,7 +115,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             >
               <Icon size={18} />
               <span className="flex-1">{label}</span>
-              <ChevronRight size={14} className="opacity-40" />
+              <ChevronRight size={14} className="opacity-40" aria-hidden="true" />
             </NavLink>
           ))}
         </nav>
