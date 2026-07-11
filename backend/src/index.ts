@@ -62,7 +62,7 @@ app.get('/api/csrf-token', (_, res) => {
     'csrf-token',
     token,
     {
-      httpOnly: process.env.NODE_ENV === 'production',
+      httpOnly: false,
       secure:
         process.env.NODE_ENV ===
         'production',
