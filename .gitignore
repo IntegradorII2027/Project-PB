@@ -36,3 +36,6 @@ Thumbs.db
 # Prisma
 backend/prisma/*.db
 backend/prisma/*.db-journal
+
+# Respaldos locales de migración de base de datos
+scripts/migration/backups/
