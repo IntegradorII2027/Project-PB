@@ -157,7 +157,7 @@ app.use((req, res, next) => {
 
 app.use('/api', csrfMiddleware, router);
 
-app.get('/health', (_, res) =>
+app.get('/api/health', (_, res) =>
   res.json({
     status: 'ok',
     version: '2.0.0',
