@@ -130,7 +130,7 @@ export default function PedidosPage() {
 
     const interval = setInterval(() => {
       cargarPedidos();
-    }, 2000);
+    }, 10000);
 
     return () => clearInterval(interval);
 
