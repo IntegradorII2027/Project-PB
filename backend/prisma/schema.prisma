@@ -145,6 +145,8 @@ model Pedido {
   total         Decimal?
   creadoEn      DateTime     @default(now())
   actualizadoEn DateTime     @updatedAt
+
+  @@index([sucursalId, actualizadoEn, id], map: "Pedido_sucursal_actualizado_id_idx")
 }
 
 enum TipoPedido {
