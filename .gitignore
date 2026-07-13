@@ -39,3 +39,6 @@ backend/prisma/*.db-journal
 
 # Respaldos locales de migración de base de datos
 scripts/migration/backups/
+
+# Respaldos locales de pruebas de volumen
+scripts/volume/backups/

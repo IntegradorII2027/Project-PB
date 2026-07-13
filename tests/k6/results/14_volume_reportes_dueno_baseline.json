@@ -1,0 +1,154 @@
+{
+    "metrics": {
+        "http_req_duration{expected_response:true}": {
+            "avg": 789.8879857142858,
+            "min": 506.059,
+            "med": 768.7567,
+            "max": 1566.575,
+            "p(90)": 1113.4932800000004,
+            "p(95)": 1340.0341399999995
+        },
+        "vus_max": {
+            "value": 1,
+            "min": 1,
+            "max": 1
+        },
+        "iteration_duration": {
+            "avg": 2844.4518,
+            "min": 2508.7466,
+            "med": 2769.4431,
+            "max": 3607.541,
+            "p(90)": 3284.3972000000003,
+            "p(95)": 3445.9691000000003
+        },
+        "http_req_duration": {
+            "avg": 789.8879857142858,
+            "min": 506.059,
+            "med": 768.7567,
+            "max": 1566.575,
+            "p(90)": 1113.4932800000004,
+            "p(95)": 1340.0341399999995,
+            "thresholds": {
+                "p(95)<5000": false
+            }
+        },
+        "iterations": {
+            "count": 5,
+            "rate": 0.31741434377136435
+        },
+        "http_req_connecting": {
+            "avg": 3.5457714285714284,
+            "min": 0,
+            "med": 0,
+            "max": 12.7196,
+            "p(90)": 12.34832,
+            "p(95)": 12.533959999999999
+        },
+        "checks": {
+            "fails": 0,
+            "passes": 10,
+            "thresholds": {
+                "rate==1": false
+            },
+            "value": 1
+        },
+        "http_req_tls_handshaking": {
+            "p(90)": 51.84014000000002,
+            "p(95)": 70.54651999999996,
+            "avg": 16.59302857142857,
+            "min": 0,
+            "med": 0,
+            "max": 89.2529
+        },
+        "vus": {
+            "value": 1,
+            "min": 0,
+            "max": 1
+        },
+        "data_received": {
+            "count": 119825,
+            "rate": 7606.834748480746
+        },
+        "http_reqs": {
+            "count": 7,
+            "rate": 0.4443800812799101
+        },
+        "http_req_sending": {
+            "p(90)": 0.6175800000000001,
+            "p(95)": 0.6863399999999998,
+            "avg": 0.22687142857142856,
+            "min": 0,
+            "med": 0,
+            "max": 0.7551
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 7,
+            "thresholds": {
+                "rate==0": false
+            },
+            "value": 0
+        },
+        "data_sent": {
+            "count": 5592,
+            "rate": 354.99620207389387
+        },
+        "http_req_receiving": {
+            "p(95)": 71.97697999999994,
+            "avg": 22.595814285714287,
+            "min": 0,
+            "med": 15.0161,
+            "max": 95.6789,
+            "p(90)": 48.275060000000025
+        },
+        "http_req_blocked": {
+            "max": 146.5424,
+            "p(90)": 82.01642000000004,
+            "p(95)": 114.27940999999991,
+            "avg": 26.50592857142857,
+            "min": 0,
+            "med": 0
+        },
+        "http_req_waiting": {
+            "min": 489.3865,
+            "med": 753.6001,
+            "max": 1470.8961,
+            "p(90)": 1074.8847000000003,
+            "p(95)": 1272.8903999999995,
+            "avg": 767.0653
+        },
+        "report_response_bytes": {
+            "min": 21261,
+            "med": 21261,
+            "max": 21261,
+            "p(90)": 21261,
+            "p(95)": 21261,
+            "avg": 21261
+        }
+    },
+    "setup_data": {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbXFhazQzdnowMDAwYzlpMHBjMzNhbXN3Iiwicm9sIjoiRFVFTk8iLCJzdWN1cnNhbElkIjpudWxsLCJpYXQiOjE3ODM5MjM4MzgsImV4cCI6MTc4Mzk1MjYzOH0.5rP4J0Evyol2PmufInMzcTbFGFdVV1XEOle0jrPVzvQ"
+    },
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "reporte responde 200": {
+                    "name": "reporte responde 200",
+                    "path": "::reporte responde 200",
+                    "id": "63006cc3cba7119f9e71f6c3655c1e89",
+                    "passes": 5,
+                    "fails": 0
+                },
+                "reporte contiene 5520 pedidos pagados": {
+                    "passes": 5,
+                    "fails": 0,
+                    "name": "reporte contiene 5520 pedidos pagados",
+                    "path": "::reporte contiene 5520 pedidos pagados",
+                    "id": "10a52aab3e952f920a2dac9f2868b8d3"
+                }
+            }
+    }
+}
