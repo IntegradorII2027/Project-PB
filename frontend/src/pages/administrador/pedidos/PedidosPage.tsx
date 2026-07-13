@@ -27,6 +27,16 @@ interface Pedido {
   actualizadoEn: string;
 }
 
+interface PedidosResponse {
+  data: Pedido[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 export default function PedidosPage() {
   const { user } = useAuthStore();
 
@@ -58,6 +68,12 @@ export default function PedidosPage() {
   const [pedidos, setPedidos] =
     useState<Pedido[]>([]);
 
+  const [pagina, setPagina] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(0);
+  const [totalPedidos, setTotalPedidos] = useState(0);
+
+  const LIMITE_POR_PAGINA = 20;
+
   const [
     pedidoSeleccionado,
     setPedidoSeleccionado,
@@ -84,11 +100,16 @@ export default function PedidosPage() {
         params.sucursalId = sucursalIdOperativa;
       }
 
-      const { data } = await api.get<Pedido[]>('/pedidos', {
+      params.page = String(pagina);
+      params.limit = String(LIMITE_POR_PAGINA);
+
+      const { data } = await api.get<PedidosResponse>('/pedidos', {
         params,
       });
 
-      setPedidos(Array.isArray(data) ? data : []);
+      setPedidos(data.data);
+      setTotalPaginas(data.pagination.totalPages);
+      setTotalPedidos(data.pagination.total);
 
     } catch (error: any) {
       console.error(
@@ -113,7 +134,7 @@ export default function PedidosPage() {
 
     return () => clearInterval(interval);
 
-  }, [busqueda, filtro, sucursalIdOperativa]);
+  }, [busqueda, filtro, sucursalIdOperativa, pagina]);
 
   const calcularTotal = (
     productos: ProductoPedido[]
@@ -335,11 +356,10 @@ export default function PedidosPage() {
           type="text"
           placeholder="Buscar por mesa o # de pedido"
           value={busqueda}
-          onChange={(e) =>
-            setBusqueda(
-              e.target.value
-            )
-          }
+          onChange={(e) => {
+            setBusqueda(e.target.value);
+            setPagina(1);
+          }}
           className="w-full lg:w-[400px] bg-white border border-border rounded-2xl pl-11 pr-4 py-3 outline-none"
         />
       </div>
@@ -353,9 +373,10 @@ export default function PedidosPage() {
         ].map((item) => (
           <button
             key={item}
-            onClick={() =>
-              setFiltro(item)
-            }
+            onClick={() => {
+              setFiltro(item);
+              setPagina(1);
+            }}
             className={`px-5 py-2 rounded-full text-sm font-medium transition-colors
             ${filtro === item
                 ? 'bg-primary text-white'
@@ -492,7 +513,39 @@ export default function PedidosPage() {
           )}
         </div>
       )}
+      {totalPaginas > 0 && (
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-text-muted">
+            Mostrando página {pagina} de {totalPaginas} · {totalPedidos} pedidos
+          </p>
 
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() =>
+                setPagina((actual) => Math.max(1, actual - 1))
+              }
+              disabled={pagina <= 1}
+              className="px-4 py-2 rounded-xl border border-border disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Anterior
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                setPagina((actual) =>
+                  Math.min(totalPaginas, actual + 1)
+                )
+              }
+              disabled={pagina >= totalPaginas}
+              className="px-4 py-2 rounded-xl border border-border disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+      )}
       {/* MODAL */}
       {modalDetalle &&
         pedidoSeleccionado && (
