@@ -3,6 +3,24 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+function getFechaHoyLima() {
+  const partes = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Lima',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+
+  const year = partes.find((p) => p.type === 'year')!.value;
+  const month = partes.find((p) => p.type === 'month')!.value;
+  const day = partes.find((p) => p.type === 'day')!.value;
+
+  return {
+    inicio: new Date(`${year}-${month}-${day}T00:00:00-05:00`),
+    fin: new Date(`${year}-${month}-${day}T23:59:59.999-05:00`),
+  };
+}
+
 export async function getDashboardDueno(req: Request, res: Response): Promise<void> {
   const duenoId = req.user!.userId;
 
@@ -13,17 +31,16 @@ export async function getDashboardDueno(req: Request, res: Response): Promise<vo
     },
   });
 
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
+  const { inicio: hoy, fin: finHoy } = getFechaHoyLima();
 
   const resumen = await Promise.all(
     sucursales.map(async (s) => {
       const [ventasHoy, pedidosHoy, mesasOcupadas] = await Promise.all([
         prisma.pedido.aggregate({
-          where: { sucursalId: s.id, estado: 'PAGADO', creadoEn: { gte: hoy } },
+          where: { sucursalId: s.id, estado: 'PAGADO', creadoEn: { gte: hoy, lte: finHoy } },
           _sum: { total: true },
         }),
-        prisma.pedido.count({ where: { sucursalId: s.id, creadoEn: { gte: hoy } } }),
+        prisma.pedido.count({ where: { sucursalId: s.id, creadoEn: { gte: hoy, lte: finHoy } } }),
         prisma.mesa.count({ where: { sucursalId: s.id, estado: { not: 'LIBRE' } } }),
       ]);
       return {
@@ -40,15 +57,14 @@ export async function getDashboardDueno(req: Request, res: Response): Promise<vo
 export async function getDashboardSucursal(req: Request, res: Response): Promise<void> {
   const sucursalId = req.user!.rol === 'DUENO' ? req.params.id : req.user!.sucursalId!;
 
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
+  const { inicio: hoy, fin: finHoy } = getFechaHoyLima();
 
   const [ventasHoy, pedidosHoy, mesasOcupadas, totalMesas, pedidosActivos, topProductosRaw] = await Promise.all([
     prisma.pedido.aggregate({
-      where: { sucursalId, estado: 'PAGADO', creadoEn: { gte: hoy } },
+      where: { sucursalId, estado: 'PAGADO', creadoEn: { gte: hoy, lte: finHoy } },
       _sum: { total: true },
     }),
-    prisma.pedido.count({ where: { sucursalId, creadoEn: { gte: hoy } } }),
+    prisma.pedido.count({ where: { sucursalId, creadoEn: { gte: hoy, lte: finHoy } } }),
     prisma.mesa.count({ where: { sucursalId, estado: { not: 'LIBRE' } } }),
     prisma.mesa.count({ where: { sucursalId } }),
     prisma.pedido.findMany({
@@ -60,7 +76,7 @@ export async function getDashboardSucursal(req: Request, res: Response): Promise
   
     prisma.itemPedido.groupBy({
       by: ['productoId'],
-      where: { pedido: { sucursalId, estado: 'PAGADO', creadoEn: { gte: hoy } } },
+      where: { pedido: { sucursalId, estado: 'PAGADO', creadoEn: { gte: hoy, lte: finHoy } } },
       _sum: { cantidad: true, precio: true },
       orderBy: { _sum: { precio: 'desc' } },
       take: 5,

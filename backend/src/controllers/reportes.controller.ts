@@ -4,27 +4,35 @@ import ExcelJS from 'exceljs';
 
 const prisma = new PrismaClient();
 
-function getFechaInicio(fecha?: string) {
-  if (!fecha) {
-    const hoy = new Date();
-    hoy.setDate(hoy.getDate() - 6);
-    hoy.setHours(0, 0, 0, 0);
-    return hoy;
-  }
+function moverFecha(fecha: string, dias: number) {
+  const [year, month, day] = fecha.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day + dias));
+  return date.toISOString().split('T')[0];
+}
 
-  const date = new Date(`${fecha}T00:00:00`);
-  date.setHours(0, 0, 0, 0);
-  return date;
+function getFechaInicio(fecha?: string) {
+  const fechaLima = fecha ?? moverFecha(formatDateKey(new Date()), -6);
+  return new Date(`${fechaLima}T00:00:00-05:00`);
 }
 
 function getFechaFin(fecha?: string) {
-  const date = fecha ? new Date(`${fecha}T00:00:00`) : new Date();
-  date.setHours(23, 59, 59, 999);
-  return date;
+  const fechaLima = fecha ?? formatDateKey(new Date());
+  return new Date(`${fechaLima}T23:59:59.999-05:00`);
 }
 
 function formatDateKey(date: Date) {
-  return date.toISOString().split('T')[0];
+  const partes = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Lima',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+
+  const year = partes.find((p) => p.type === 'year')!.value;
+  const month = partes.find((p) => p.type === 'month')!.value;
+  const day = partes.find((p) => p.type === 'day')!.value;
+
+  return `${year}-${month}-${day}`;
 }
 
 function generarDiasRango(desde: Date, hasta: Date) {
@@ -333,13 +341,8 @@ export async function getReportes(req: Request, res: Response): Promise<void> {
       sucursalId?: string;
     };
 
-    const fechaInicio = desde
-      ? new Date(`${desde}T00:00:00`)
-      : new Date(new Date().setDate(new Date().getDate() - 6));
-
-    const fechaFin = hasta
-      ? new Date(`${hasta}T23:59:59`)
-      : new Date();
+    const fechaInicio = getFechaInicio(desde);
+    const fechaFin = getFechaFin(hasta);
 
     const whereBase: any = {
       pagado: true,
@@ -544,13 +547,8 @@ export async function exportarReporteExcel(
       sucursalId?: string;
     };
 
-    const fechaInicio = desde
-      ? new Date(`${desde}T00:00:00`)
-      : new Date(new Date().setDate(new Date().getDate() - 6));
-
-    const fechaFin = hasta
-      ? new Date(`${hasta}T23:59:59`)
-      : new Date();
+    const fechaInicio = getFechaInicio(desde);
+    const fechaFin = getFechaFin(hasta);
 
     const whereBase: any = {
       pagado: true,
