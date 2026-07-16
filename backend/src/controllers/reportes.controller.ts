@@ -180,7 +180,7 @@ export async function getReporteDueno(req: Request, res: Response): Promise<void
       prisma.pedido.findMany({
         where: pedidoWhere,
         orderBy: { creadoEn: 'desc' },
-        take: 50,
+        take: 20,
         select: {
           id: true,
           numero: true,
