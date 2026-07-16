@@ -54,12 +54,18 @@ export default function ReportesPage() {
     vistaAdministradorActiva &&
     Boolean(sucursalActivaId);
 
-  const hoy = new Date().toISOString().split('T')[0];
+  const formatDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const hoy = formatDate(new Date());
 
   const hace7Dias = new Date();
   hace7Dias.setDate(hace7Dias.getDate() - 6);
-
-  const formatDate = (date: Date) => date.toISOString().split('T')[0];
 
   const [filtroRapido, setFiltroRapido] = useState<
     'HOY' | 'SEMANA' | 'MES' | 'PERSONALIZADO'
