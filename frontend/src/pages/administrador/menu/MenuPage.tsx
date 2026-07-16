@@ -34,6 +34,8 @@ interface Producto {
   tipo: 'COCINA' | 'COMPLEMENTO';
 }
 
+const PREFIJO_K6 = '[K6-VOLUMEN-V1]';
+
 export default function MenuPage() {
   const [busqueda, setBusqueda] = useState('');
   const [categoriaActiva, setCategoriaActiva] = useState('Todos');
@@ -65,7 +67,11 @@ export default function MenuPage() {
   const cargarCategorias = async () => {
     try {
       const { data } = await api.get<Categoria[]>('/categorias');
-      setCategorias(Array.isArray(data) ? data : []);
+      setCategorias(
+        Array.isArray(data)
+          ? data.filter((categoria) => !categoria.nombre.startsWith(PREFIJO_K6))
+          : []
+      );
     } catch (error) {
       console.error(error);
       setCategorias([]);
@@ -75,7 +81,15 @@ export default function MenuPage() {
   const cargarProductos = async () => {
     try {
       const { data } = await api.get<Producto[]>('/productos');
-      setProductos(Array.isArray(data) ? data : []);
+      setProductos(
+        Array.isArray(data)
+          ? data.filter(
+              (producto) =>
+                !producto.nombre.startsWith(PREFIJO_K6) &&
+                !producto.categoria.nombre.startsWith(PREFIJO_K6)
+            )
+          : []
+      );
     } catch (error) {
       console.error(error);
       setProductos([]);
@@ -264,7 +278,7 @@ export default function MenuPage() {
 
       const okCategoria =
         categoriaActiva === 'Todos' ||
-        p.categoria.nombre === categoriaActiva;
+        p.categoria.id === categoriaActiva;
 
       return okBusqueda && okCategoria;
     })
@@ -307,7 +321,7 @@ export default function MenuPage() {
 
     categorias.forEach((categoria) => {
       const productosCategoria = productos.filter(
-        (p) => p.categoria.nombre === categoria.nombre
+        (p) => p.categoria.id === categoria.id
       );
 
       if (productosCategoria.length === 0) return;
@@ -413,8 +427,8 @@ export default function MenuPage() {
           categorias.map((c) => (
             <button
               key={c.id}
-              onClick={() => setCategoriaActiva(c.nombre)}
-              className={`px-5 py-2 rounded-full text-sm font-medium ${categoriaActiva === c.nombre
+              onClick={() => setCategoriaActiva(c.id)}
+              className={`px-5 py-2 rounded-full text-sm font-medium ${categoriaActiva === c.id
                 ? 'bg-primary text-white'
                 : 'bg-white border border-border'
                 }`}
