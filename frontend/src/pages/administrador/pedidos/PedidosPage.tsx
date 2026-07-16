@@ -69,6 +69,8 @@ export default function PedidosPage() {
     useState<Pedido[]>([]);
 
   const [pagina, setPagina] = useState(1);
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
   const [totalPaginas, setTotalPaginas] = useState(0);
   const [totalPedidos, setTotalPedidos] = useState(0);
 
@@ -98,6 +100,14 @@ export default function PedidosPage() {
 
       if (isDuenoEnVistaAdministrador && sucursalIdOperativa) {
         params.sucursalId = sucursalIdOperativa;
+      }
+
+      if (fechaDesde) {
+        params.desde = fechaDesde;
+      }
+
+      if (fechaHasta) {
+        params.hasta = fechaHasta;
       }
 
       params.page = String(pagina);
@@ -134,7 +144,7 @@ export default function PedidosPage() {
 
     return () => clearInterval(interval);
 
-  }, [busqueda, filtro, sucursalIdOperativa, pagina]);
+  }, [busqueda, filtro, sucursalIdOperativa, pagina, fechaDesde, fechaHasta]);
 
   const calcularTotal = (
     productos: ProductoPedido[]
@@ -364,6 +374,57 @@ export default function PedidosPage() {
         />
       </div>
 
+      <div className="bg-white border border-border rounded-2xl p-4 mb-5">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+          <div>
+            <label className="block text-sm font-medium text-text mb-2">
+              Desde
+            </label>
+
+            <input
+              type="date"
+              value={fechaDesde}
+              max={fechaHasta || undefined}
+              onChange={(e) => {
+                setFechaDesde(e.target.value);
+                setPagina(1);
+              }}
+              className="border border-border rounded-xl px-4 py-3 outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text mb-2">
+              Hasta
+            </label>
+
+            <input
+              type="date"
+              value={fechaHasta}
+              min={fechaDesde || undefined}
+              onChange={(e) => {
+                setFechaHasta(e.target.value);
+                setPagina(1);
+              }}
+              className="border border-border rounded-xl px-4 py-3 outline-none"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setFechaDesde('');
+              setFechaHasta('');
+              setPagina(1);
+            }}
+            disabled={!fechaDesde && !fechaHasta}
+            className="px-5 py-3 rounded-xl border border-border hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Limpiar fechas
+          </button>
+        </div>
+      </div>
+
       <div className="flex flex-wrap gap-3 mb-8">
         {[
           'TODOS',
@@ -444,6 +505,16 @@ export default function PedidosPage() {
                       </span>
 
                     </div>
+                    <p className="text-sm text-text-muted mt-3">
+                      {new Date(pedido.creadoEn).toLocaleString('es-PE', {
+                        timeZone: 'America/Lima',
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </p>
                   </div>
 
                   <button

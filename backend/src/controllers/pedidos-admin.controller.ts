@@ -19,17 +19,21 @@ export async function getPedidosAdmin(
     };
 
     const {
-      busqueda,
-      estado,
-      sucursalId,
-      page: pageQuery,
-      limit: limitQuery,
+        busqueda,
+        estado,
+        sucursalId,
+        desde,
+        hasta,
+        page: pageQuery,
+        limit: limitQuery,
     } = req.query as {
-      busqueda?: string;
-      estado?: string;
-      sucursalId?: string;
-      page?: string;
-      limit?: string;
+        busqueda?: string;
+        estado?: string;
+        sucursalId?: string;
+        desde?: string;
+        hasta?: string;
+        page?: string;
+        limit?: string;
     };
 
     const pageParsed = Number(pageQuery ?? 1);
@@ -83,6 +87,51 @@ export async function getPedidosAdmin(
 
     if (estado && estado !== 'TODOS') {
       where.estado = estado as EstadoPedido;
+    }
+
+    if (desde || hasta) {
+        where.creadoEn = {};
+
+        if (desde) {
+            const fechaDesde = new Date(
+            `${desde}T00:00:00.000-05:00`
+            );
+
+            if (Number.isNaN(fechaDesde.getTime())) {
+            res.status(400).json({
+                error: 'Fecha desde inválida',
+            });
+            return;
+            }
+
+            where.creadoEn.gte = fechaDesde;
+        }
+
+        if (hasta) {
+            const fechaHasta = new Date(
+            `${hasta}T23:59:59.999-05:00`
+            );
+
+            if (Number.isNaN(fechaHasta.getTime())) {
+            res.status(400).json({
+                error: 'Fecha hasta inválida',
+            });
+            return;
+            }
+
+            where.creadoEn.lte = fechaHasta;
+        }
+
+        if (
+            where.creadoEn.gte &&
+            where.creadoEn.lte &&
+            where.creadoEn.gte > where.creadoEn.lte
+        ) {
+            res.status(400).json({
+            error: 'La fecha desde no puede ser mayor que la fecha hasta',
+            });
+            return;
+        }
     }
 
     if (busqueda) {
